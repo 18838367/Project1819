@@ -1,0 +1,21 @@
+
+
+http://swcarpentry.github.io/git-novice/
+
+https://pawseysc.github.io/shell-hpc/08-Extra/index.html
+
+https://hub.ddns.net/user/cou049/terminals/1
+
+https://pawseysc.github.io/using-nimbus/
+
+https://github.com/skjerven/jupyter-ml
+
+https://github.com/CurtinIC/pawsey_interns_ml
+
+cou049 - username 
+Zoanthrope19 - password
+
+
+
+
+

@@ -1,0 +1,84 @@
+Intro to Supercomputing
+
+
+parts to a supercomputer 
+
+
+      High performance storage  --> data movers
+      ^^                      ^^
+      ||                      ||
+login nodes -- > scheduler -- Compute nodes
+
+
+login nodes 
+- dont run work here, just for moving around and submiting jobs 
+- run on compute nodes 
+- different hardware to compute nodes, jobs may fail on login nodes but not on compute nodes
+- many people share the same login node (~100)
+
+
+Compute nodes 
+- access provided by the scheduler, manages the queue 
+- parallelism is how significant performance increases are achieved 
+- fast interconnect between compute nodes 
+- jobs can span mutliple compute nodes 
+- each compute node has one or more CPU's 
+- each CPU has mutiple cores
+- each CPU has memory attached to it L3 cache 
+- each node has na external network connection 
+- some systems have accelerators e.g. GPU's
+
+High Performance Storage
+- fast storage inside the SC
+- temporary working area 
+-- might have local node storage 
+ - not shared with other users 
+- usually have global storage 
+	- all nodes can access the filesystems 
+	- either directly connected to the interconnect or via the router nodes 
+	- the storage is shared, multiple simultaneous users on different nodes will reduce performance 
+
+Data Mover Nodes
+- more or less like the login nodes except you can't log into them 
+[hpc-data.pawsey.org.au]
+
+Scheduler
+- the scheduler is playing tetris with the system
+- as a user you describe the shape of the job to the scheudler and it figures out where best to fit your job in the queue 
+
+
+Magnus CRAY XC40 1488  compute nodes 24 cores per node 64GB RAM/node Aries interconnect (very special) (72 Giga bits per second)
+- for large parallel workflows 
+Galaxy CRAY XC30 472 nodes 20 cores per node 64GB RAM/node Aries interconnect
+- For radio astronomy almost exclusively 
+Zeus HPE cluster 90 nodes 28 cores/node 98-129 GB RAM/node has lots of different kinds of nodes 
+
+
+SCRATCH 
+- high performance temp storage 
+- 30 day lifetime then files are purged 
+- no touching files 
+- pls delete them before they are purged (better for filesystem as there is a load for the filesystem to do it itself)
+- $MYSCRATCH
+
+Group filesystem
+- high performance but not as fast scratch 
+- default 1TB quota
+- $MYGROUP
+
+Home filesystem 
+- configs and small input files 
+- small quota 
+- slow 
+- dont use it unless you have to 
+- $HOME   
+
+
+
+IMPORTANT
+!wget https://bootstrap.pypa.io/get-pip.py
+!python3 get-pip.py
+!pip3 install theano
+!git clone https://github.com/CurtinIC/pawsey_interns_ml.git
+!pip3 install glob2
+!pip3 install plotly==3.3.0
