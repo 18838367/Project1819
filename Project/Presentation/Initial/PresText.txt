@@ -1,0 +1,41 @@
+Hi all my names mawson and my summer project is on the optimisation of galaxy 
+formation and evolution models with rodrigo tobar.
+
+The formation of galaxies is one of the grandest scale operations that occurs in our 
+universe, and knowing how they form and evolve over time is of great interest 
+to the scientific community. Using theoretical models based on the physics we know
+we can simulate the formation of galaxies and then check the results against what 
+we can observe today to see if our assumptions and models of the universe ring true
+
+There are a few ways in which galaxy evolution can be simulated. One could run a 
+hydrodynamical simulation, which simulates the formation of galaxies from particulate
+matter. This method is very computationally heavy even by todays standards so we'd 
+really like to run it only once. This presents a problem, because we aren't 100% sure
+of the physical interplay on such a scale. So ideally we'd like to be able to test a 
+vast range of models and parameters to see how they affect the end result. This is
+where semi analytical models begin to shine. A semi-analytical model works within a 
+dark matter scaffolding that circumvents the need to simulate galaxies at the particle
+level. This dark matter scaffolding itself must be initialised at a particle level 
+but because it is only affected by gravity we dont need to test different models so
+it need only be constructed once and the result used again and again. 
+
+One such simulation is the millennium simulation which I'm sure we all know. Now
+its not the one I'm actually using but it had easily available pretty pictures, so
+near enough is good enough. These simulations evolve the position of dark matter 
+particles over time under gravities influence and then take snapshots of the particles
+at predetermined intervals. These snapshots form the basis for constructing our 
+scaffolding 
+
+So how do we build the rest, well first we need to identify where galaxies
+might form within our DM. These will be overdense regions where gravity is 
+pulling in the necessary baryonic matter. We use a program called VELOCIraptor to 
+identify where these overdense regions are, for example it might take a look at 
+these snapshots here and find these groups of DM particles. Now this is in and of 
+itself not the most useful thing, so next we apply an algorithm called TREEFROG to 
+link these groups between snapshots, effectively tracking the groups through time, a
+process that is much quicker than trying to track all the individual particles. 
+The linking of these groups in time forms whats known as a merger tree, which shows
+how certain groups combine to form larger and larger DM halos. These merger trees 
+are the aforementioned scaffolding. 
+
+
