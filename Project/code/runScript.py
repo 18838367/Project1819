@@ -3,5 +3,24 @@
 #imports
 
 import subprocess
+import sys
+import h5py
+import hdf5Common
+#first system argument should be either an option or the path to the config file
+#if just want to read data without re-running shark just put -V or -h 
+#this will just give you the version of shark or the help but wont actually run
+subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
 
-subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", "/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/sample.cfg"])
+#second and third system arguments are the timestep and subvolume respectively
+galaxies=h5py.File("/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/mini-SURFS/my_model/"+str(sys.argv[2])+"/"+str(sys.argv[3])+"/galaxies.hdf5", 'r')
+
+print("KeysM: ", hdf5Common.keys(galaxies))
+#an example of reading in the data
+
+keychainM=hdf5Common.keys(galaxies)
+keychainM_1=hdf5Common.keys(galaxies[keychainM[int(sys.argv[4])]])
+print("KeysM_1: ", keychainM_1)
+
+data=galaxies[keychainM[int(sys.argv[4])]][keychainM_1[int(sys.argv[5])]][()]
+print(data)
+
