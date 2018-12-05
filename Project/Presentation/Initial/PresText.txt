@@ -38,4 +38,6 @@ The linking of these groups in time forms whats known as a merger tree, which sh
 how certain groups combine to form larger and larger DM halos. These merger trees 
 are the aforementioned scaffolding. 
 
+Within the merger trees physical process are used to model and interpolate 
+the evolution of galaxies between snapshots
 
