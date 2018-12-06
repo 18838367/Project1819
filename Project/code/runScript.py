@@ -16,11 +16,12 @@ galaxies=h5py.File("/Users/mawsonsammons/Documents/ICRARInternship/Project/code/
 
 print("KeysM: ", hdf5Common.keys(galaxies))
 #an example of reading in the data
-
+prompt1=input('input key:   ')
 keychainM=hdf5Common.keys(galaxies)
-keychainM_1=hdf5Common.keys(galaxies[keychainM[int(sys.argv[4])]])
+keychainM_1=hdf5Common.keys(galaxies[prompt1])
 print("KeysM_1: ", keychainM_1)
-
-data=galaxies[keychainM[int(sys.argv[4])]][keychainM_1[int(sys.argv[5])]][()]
+#these extra input parameters are for navigating the filesystem of hdf5
+prompt2=input('input key:   ')
+data=galaxies[prompt1][prompt2][()]
 print(data)
 
