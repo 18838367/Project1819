@@ -39,5 +39,19 @@ how certain groups combine to form larger and larger DM halos. These merger tree
 are the aforementioned scaffolding. 
 
 Within the merger trees physical process are used to model and interpolate 
-the evolution of galaxies between snapshots
+the evolution of galaxies between snapshots, and then the end results can be compared to observations to see how well we did. My task specifically lies within this realm
+of optimising the input parameters to find the most apt simulation of reality. 
+
+
+
+-- optional extras 
+
+To do this I'll be using whats known as a particle swarm optimisation technique. 
+As the animation shows this method relies on using multiple instances of an algorithm
+at different points within the parameter space to quickly and efficienctly find the
+most optimum point. The points are initialised using a maximim latin hypercube and 
+then they move through the paramter space of some difference function with a velocity
+given by this equation, where the terms are as stated. 
+
+
 
