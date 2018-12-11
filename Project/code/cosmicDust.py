@@ -5,49 +5,63 @@ import numpy as np
 import subprocess
 import sys
 import h5py
-import hdf5Common
-import common
+import math
+from shark.standard_plots import common
 import matplotlib.pyplot as plt
-import utilities_statistics as us
+from shark.standard_plots import utilities_statistics as us
+from shark.standard_plots import global_quantities
 import analysis
 #first system argument should be either an option or the path to the config file
 #if just want to read data without re-running shark just put -V or -h 
 #this will just give you the version of shark or the help but wont actually run
-subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
-print(sys.argv[1])
-#second and third system arguments are the timestep and subvolume respectively
-galaxies=h5py.File("/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/mini-SURFS/my_model/"+str(sys.argv[2])+"/"+str(sys.argv[3])+"/galaxies.hdf5", 'r')
-
-#print("KeysM: ", hdf5Common.keys(galaxies))
-#an example of reading in the data
-#prompt1=input('input key:   ')
-#keychainM=hdf5Common.keys(galaxies)
-#keychainM_1=hdf5Common.keys(galaxies[prompt1])
-#print("KeysM_1: ", keychainM_1)
-#these extra input parameters are for navigating the filesystem of hdf5
-#prompt2=input('input key:   ')
-#data=galaxies[prompt1][prompt2][()]
-#print(data)
+#subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
 
 #some of this has been adapted from the plotting functions within standar_plots
+##################################
+# Constants
+GyrToYr = 1e9
+Zsun = 0.0127
+minmass = 1.0
+Omegab = 0.0491
+G    = 4.299e-9 #Gravity constant in units of (km/s)^2 * Mpc/Msun
+rho_crit = 3.0 * pow(100.0,2.0) / 8 / math.pi / G #in units of h^2*Msun/Mpc^3
+sbar = rho_crit * Omegab
+OmegaM = 0.3121
+OmegaL = 0.6879
+XH = 0.72
+
+modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
+
+
+fields = {'global': ('redshifts', 'm_hi', 'm_h2', 'mcold', 'mcold_metals',
+                     'mhot_halo', 'mejected_halo', 'mstars', 'mstars_bursts_mergers', 'mstars_bursts_diskinstabilities',
+                     'm_bh', 'sfr_quiescent', 'sfr_burst', 'm_dm', 'mcold_halo', 'number_major_mergers',
+                     'number_minor_mergers', 'number_disk_instabilities')}
+
+# Read data from each subvolume at a time and add it up
+# rather than appending it all together
+for idx, subvol in enumerate(subvols):
+    subvol_data = common.read_data(modeldir, redshift_table[0], fields, [subvol])
+    if idx == 0:
+        hdf5_data = subvol_data
+    else:
+        for subvol_datum, hdf5_datum in zip(subvol_data[3:], hdf5_data[3:]):
+            hdf5_datum += subvol_datum
+
+# Also make sure that the total volume takes into account the number of subvolumes read
+hdf5_data[1] = hdf5_data[1] * len(subvols)
+
+h0, redshifts = hdf5_data[0], hdf5_data[2]
+
+(mstar_plot, mcold_plot, mhot_plot, meje_plot,
+ mstar_dm_plot, mcold_dm_plot, mhot_dm_plot, meje_dm_plot, mbar_dm_plot,
+ sfr, sfrd, sfrb, mstarden, mstarbden_mergers, mstarbden_diskins, sfre, sfreH2, mhrat,
+ mHI_plot, mH2_plot, mH2den, mdustden, omegaHI, mdustden_mol, mcoldden, mhotden,
+ mejeden, history_interactions, mDMden) = global_quantities.prepare_data(hdf5_data, redshifts)
+
 
 #establishing data - obs
 redD17d,redD17u,smdD17,err1,err2,err3,err4=np.loadtxt('shark/data/Global/Driver18_dust.dat', usecols=[1,2,3,4,5,6,7] , unpack=True)
-
-
-#establishing data - model
-h0=galaxies["cosmology"]['h'][()]
-mHI=galaxies['global']['m_hi'][()]
-mH2=galaxies['global']['m_h2'][()]
-mColdMetals=galaxies['global']['mcold_metals'][()]
-Zsun=0.0127
-volh=galaxies["run_info"]["effective_volume"][()]
-redshifts=np.loadtxt("/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/input/redshifts.txt", usecols=[1], unpack=True)
-
-#calculating model results
-
-mdustden=      0.006 * mColdMetals/Zsun / volh
-mdustden_mol=  0.006 * mColdMetals/Zsun * mH2 / (mH2 + mHI) / volh
 
 #calculating obs results
 
