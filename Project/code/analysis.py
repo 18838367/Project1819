@@ -49,27 +49,34 @@ def nearestNeighbours(xObs, xMod):
 	mins=np.repeat(mins, LMod, axis=1)
 	placed=np.equal(mins, diffs)*np.repeat(np.expand_dims(np.arange(0,LMod), axis=1), LObs, axis=1).T
 	placed1=np.sum(placed, axis=1)
-	#closest1=kept[placed1]
+	closest1=kept[placed1]
 	placed2=np.add(placed1,1)
 	#below deals with the fringe case; when there is no model x value greater than
 	#a specific observation x value 
 	temp=np.where(placed2 > (len(kept)-1))
 	placed2[temp]=placed2[temp]-1
-	#closest2=kept[placed]
+	closest2=kept[placed]
 	#print("-----------------")
 	#print(closest1, closest2)
-	return placed1, placed2
+	return placed1, placed2, closest1
 
 def myChi2(Obs, Mod):
 	chi2=(Mod-Obs)**2/Obs
 	return chi2
 
-def nonEqualChi2(xObs, xMod, yObs, yMod):
+def nonEqualChi2(xObs, xMod, yObs, yMod, above=666, below=666):
 #invokes above methods to get a chi2 value from two sets of data with different x
 #values
 # CAUTION if models x values do not sufficiently resolve curve then this will 
 #be dead wrong
-	x1, x2 = nearestNeighbours(xObs, xMod)
+	if above==666 and below==666:
+		above=np.amin(xObs)-1.0
+		below=np.amax(xObs)+1.0
+	x1, x2, closest1= nearestNeighbours(xObs, xMod)
 	yR = linIntp(xMod[x1], xMod[x2], yMod[x1], yMod[x2], xObs)
 	chi2 = myChi2(yObs, yR)
-	return np.sum(chi2)
+	tempA=np.greater(xObs,above)
+	tempB=np.less(xObs,below)
+	chi2=chi2*tempA*tempB
+	sumChi2=np.sum(chi2)
+	return sumChi2
