@@ -2,49 +2,110 @@
 # exists within the code directory at the highest level
 #imports
 import numpy as np
+import collections
 import subprocess
 import sys
 import h5py
 import hdf5Common
-import common
+from shark.standard_plots import common
 import matplotlib.pyplot as plt
-import utilities_statistics as us
+from shark.standard_plots import utilities_statistics as us
 import analysis
-#first system argument should be either an option or the path to the config file
-#if just want to read data without re-running shark just put -V or -h 
-#this will just give you the version of shark or the help but wont actually run
-subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
-print(sys.argv[1])
-#second and third system arguments are the timestep and subvolume respectively
-galaxies=h5py.File("/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/mini-SURFS/my_model/"+str(sys.argv[2])+"/"+str(sys.argv[3])+"/galaxies.hdf5", 'r')
+from shark.standard_plots import smf
+#subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
+observation = collections.namedtuple('observation', 'label x y yerrup yerrdn err_absolute')
 
-#print("KeysM: ", hdf5Common.keys(galaxies))
-#an example of reading in the data
-#prompt1=input('input key:   ')
-#keychainM=hdf5Common.keys(galaxies)
-#keychainM_1=hdf5Common.keys(galaxies[prompt1])
-#print("KeysM_1: ", keychainM_1)
-#these extra input parameters are for navigating the filesystem of hdf5
-#prompt2=input('input key:   ')
-#data=galaxies[prompt1][prompt2][()]
-#print(data)
+##################################
+# Constants
+GyrToYr = 1e9
+Zsun = 0.0127
+XH = 0.72
+MpcToKpc = 1e3
 
-#some of this has been adapted from the plotting functions within standar_plots
+##################################
+# Mass function initialization
+mlow = 5
+mupp = 14
+dm = 0.2
+mbins = np.arange(mlow,mupp,dm)
+xmf = mbins + dm/2.0
+imf   = 'cha'
 
-#establishing data - obs
-# outdir, obsdir, h0, plotz, hist_smf, hist_smf_cen, hist_smf_sat, hist_smf_er     r, hist_smf_30kpc)
-redshift_table=np.loadtxt("/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/input/redshifts.txt", usecols=[1], unpack=True)
+mlow2 = 5
+mupp2 = 14
+dm2 = 0.3
+mbins2 = np.arange(mlow2,mupp2,dm2)
+xmf2 = mbins2 + dm2/2.0
+
+ssfrlow = -6
+ssfrupp = 4
+dssfr = 0.2
+ssfrbins = np.arange(ssfrlow,ssfrupp,dssfr)
+xssfr    = ssfrbins + dssfr/2.0
+
+#########################################
+#calculation begins
+#some of these initialisations are not necessary for this exact part 
+#however they allow the use of the prepare data from the standard plots smf code
+#so they are useful in that respect 
+modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
 zlist=(0, 0.5, 1, 2, 3, 4)
+
+mainseq     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mainseq_cen = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mainseq_sat = np.zeros(shape = (len(zlist), 3, len(xmf)))
+
+mainseqsf     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mainseqsf_cen = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mainseqsf_sat = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mainseqsf_1s  = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mainseqHI     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mainseqH2     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+
+mzr         = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mzr_cen     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mzr_sat     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mszr        = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mszr_cen    = np.zeros(shape = (len(zlist), 3, len(xmf)))
+mszr_sat    = np.zeros(shape = (len(zlist), 3, len(xmf)))
+
+fmzr        = np.zeros(shape = (len(zlist), 3, len(xmf)))
+
+sfe         = np.zeros(shape = (len(zlist), 3, len(xmf)))
+sfe_cen     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+sfe_sat     = np.zeros(shape = (len(zlist), 3, len(xmf)))
+
+passive_fractions = np.zeros(shape = (len(zlist), 3, len(xmf2)))
+
+# Histograms
+hist_smf       = np.zeros(shape = (len(zlist), len(mbins)))
+hist_smf_30kpc = np.zeros(shape = (len(zlist), len(mbins)))
+hist_smf_err   = np.zeros(shape = (len(zlist), len(mbins)))
+hist_smf_cen   = np.zeros(shape = (len(zlist), len(mbins)))
+hist_smf_sat   = np.zeros(shape = (len(zlist), len(mbins)))
+
+plotz = np.empty(shape=(len(zlist)), dtype=np.bool_)
+hist_HImf = np.zeros(shape = (len(zlist), len(mbins)))
+hist_HImf_cen = np.zeros(shape = (len(zlist), len(mbins)))
+hist_HImf_sat = np.zeros(shape = (len(zlist), len(mbins)))
+plotz_HImf = np.empty(shape=(len(zlist)), dtype=np.bool_)
+hist_H2mf = np.zeros(shape = (len(zlist), len(mbins)))
+hist_H2mf_cen = np.zeros(shape = (len(zlist), len(mbins)))
+hist_H2mf_sat = np.zeros(shape = (len(zlist), len(mbins)))
+
+hist_ssfr = np.zeros(shape = (len(zlist), len(ssfrbins)))
+
+
 fields = {'galaxies': ('sfr_disk', 'sfr_burst', 'mstars_disk', 'mstars_bulge',
-                            'rstar_disk', 'm_bh', 'matom_disk', 'mmol_disk', 'mgas_disk',
-                            'matom_bulge', 'mmol_bulge', 'mgas_bulge',
-                            'mgas_metals_disk', 'mgas_metals_bulge',
-                            'mstars_metals_disk', 'mstars_metals_bulge', 'type',
-                'mvir_hosthalo', 'rstar_bulge')}
- 
+                       'rstar_disk', 'm_bh', 'matom_disk', 'mmol_disk', 'mgas_disk',
+                       'matom_bulge', 'mmol_bulge', 'mgas_bulge',
+                       'mgas_metals_disk', 'mgas_metals_bulge',
+                       'mstars_metals_disk', 'mstars_metals_bulge', 'type',
+           'mvir_hosthalo', 'rstar_bulge')}
+
 for index, snapshot in enumerate(redshift_table[zlist]):
     hdf5_data = common.read_data(modeldir, snapshot, fields, subvols)
-    mass = prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
+    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
                          hist_smf_sat, hist_smf_30kpc, hist_HImf, hist_HImf_cen, hist_HImf_sat,
                          hist_H2mf, hist_H2mf_cen, hist_H2mf_sat, mainseq, mainseqsf,
                          sfe, mainseq_cen, mainseqsf_cen, sfe_cen, mainseq_sat,
@@ -59,5 +120,76 @@ for index, snapshot in enumerate(redshift_table[zlist]):
         ind  = np.where((sfr_disk + sfr_burst > 0) & (mdisk + mbulge > 0))
         sfr_seq[0,ind] = mass[ind]
         sfr_seq[1,ind] = np.log10((sfr_disk[ind] + sfr_burst[ind]) / h0 / GyrToYr)
-print('look i did it') 
 
+#########################
+#take logs
+
+ind = np.where(hist_smf > 0.)
+hist_smf[ind] = np.log10(hist_smf[ind])
+ind = np.where(hist_smf_30kpc > 0.)
+hist_smf_30kpc[ind] = np.log10(hist_smf_30kpc[ind])
+ind = np.where(hist_smf_cen > 0.)
+hist_smf_cen[ind] = np.log10(hist_smf_cen[ind])
+ind = np.where(hist_smf_sat > 0.)
+hist_smf_sat[ind] = np.log10(hist_smf_sat[ind])
+ind = np.where(hist_smf_err > 0.)
+hist_smf_err[ind] = np.log10(hist_smf_err[ind])
+
+ind = np.where(hist_HImf > 0.)
+hist_HImf[ind] = np.log10(hist_HImf[ind])
+ind = np.where(hist_HImf_cen > 0.)
+hist_HImf_cen[ind] = np.log10(hist_HImf_cen[ind])
+ind = np.where(hist_HImf_sat > 0.)
+hist_HImf_sat[ind] = np.log10(hist_HImf_sat[ind])
+
+ind = np.where(hist_H2mf > 0.)
+hist_H2mf[ind] = np.log10(hist_H2mf[ind])
+ind = np.where(hist_H2mf_cen > 0.)
+hist_H2mf_cen[ind] = np.log10(hist_H2mf_cen[ind])
+ind = np.where(hist_H2mf_sat > 0.)
+hist_H2mf_sat[ind] = np.log10(hist_H2mf_sat[ind])
+
+
+
+###################################
+#load observations 
+
+z0obs = []
+lm, p, dpdn, dpup = np.loadtxt('/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/data/mf/SMF/GAMAII_BBD_GSMFs.dat', usecols=[0,1,2,3], unpack=True)
+xobs = lm
+indx = np.where(p > 0)
+yobs = np.log10(p[indx])
+ydn = yobs - np.log10(p[indx]-dpdn[indx])
+yup = np.log10(p[indx]+dpup[indx]) - yobs
+z0obs.append((observation("Wright+2017", xobs[indx], yobs, ydn, yup, err_absolute=False), 'o'))
+
+######################################
+#nabbed from plotting part 
+fig=plt.figure(figsize=(5,4.5))
+ax=fig.add_subplot(111)
+ax.errorbar(xobs[indx], yobs, [ydn, yup])
+y = hist_smf[0,:]
+ind = np.where(y < 0.)
+ax.plot(xmf[ind],y[ind],'r', label='all galaxies')
+#####
+#store these ones for chi2
+xMod=xmf[ind]
+yMod=y[ind]
+xObs=xobs[indx]
+yObs=yobs
+y = hist_smf_cen[0,:]
+ind = np.where(y < 0.)
+ax.plot(xmf[ind],y[ind],'b', linestyle='dotted', label ='centrals')
+y = hist_smf_sat[0,:]
+ind = np.where(y < 0.)
+ax.plot(xmf[ind],y[ind],'g', linestyle='dashed', label ='satellites')
+y = hist_smf_30kpc[0,:]
+ind = np.where(y < 0.)
+ax.plot(xmf[ind],y[ind],'k', linestyle='dotted', linewidth=1, label ='30kpc')
+plt.axis([8,13,-6,-1])
+plt.show()
+
+#############################
+#do chi2
+chi2=analysis.nonEqualChi2(xObs, xMod, yObs, yMod, 8, 13) 
+print('chi2 :', chi2)
