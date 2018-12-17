@@ -12,13 +12,12 @@ import matplotlib.pyplot as plt
 from shark.standard_plots import utilities_statistics as us
 import analysis
 from shark.standard_plots import smf
-import collections
 #subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
 
-def stellarMF(*args):
-
+def HIMF(*args):
 	observation = collections.namedtuple('observation', 'label x y yerrup yerrdn err_absolute')
-	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr=args
+	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
+	
 	zlist=(0, 0.5, 1, 2, 3, 4)
 	
 	mainseq     = np.zeros(shape = (len(zlist), 3, len(xmf)))
@@ -122,53 +121,62 @@ def stellarMF(*args):
 	
 	
 	###################################
-	#load observations 
-	
-	z0obs = []
-	lm, p, dpdn, dpup = np.loadtxt('/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/data/mf/SMF/GAMAII_BBD_GSMFs.dat', usecols=[0,1,2,3], unpack=True)
-	xobs = lm
-	indx = np.where(p > 0)
-	yobs = np.log10(p[indx])
-	ydn = yobs - np.log10(p[indx]-dpdn[indx])
-	yup = np.log10(p[indx]+dpup[indx]) - yobs
-	z0obs.append((observation("Wright+2017", xobs[indx], yobs, ydn, yup, err_absolute=False), 'o'))
-	
 	######################################
 	#nabbed from plotting part 
 #	fig=plt.figure(figsize=(5,4.5))
 #	ax=fig.add_subplot(111)
-#	ax.errorbar(xobs[indx], yobs, [ydn, yup])
-	y = hist_smf[0,:]
+	#load observations #HIPASS
+	lmHI, pHI, dpHIdn, dpHIup = common.load_observation(obsdir, 'mf/GasMF/HIMF_Zwaan2005.dat', [0,1,2,3])
+	
+	#correct data for their choice of cosmology
+	hobs = 0.75
+	xobs = lmHI + np.log10(pow(hobs,2)/pow(h0,2))
+	yobs = pHI + np.log10(pow(h0,3)/pow(hobs,3))
+#	ax.errorbar(xobs, yobs, yerr=[dpHIdn,dpHIup], ls='None', mfc='None', ecolor = 'grey', mec='grey',marker='o',label="Zwaan+2005")
+	xObsZwaan=xobs
+	yObsZwaan=yobs
+	#ALFALFA.40
+	lmHI, pHI, pdnHI, pduHI = common.load_observation(obsdir, 'mf/GasMF/HIMF_Jones18.dat', [0,1,2,3])
+	
+	#correct data for their choice of cosmology
+	dpdnHI = pHI - pdnHI
+	dpduHI = pduHI - pHI
+	hobs = 0.7
+	xobs = lmHI + np.log10(pow(hobs,2)/pow(h0,2))
+	yobs = pHI + np.log10(pow(h0,3)/pow(hobs,3))
+#	ax.errorbar(xobs, yobs, yerr=[dpdnHI,dpduHI], ls='None', mfc='None', ecolor = 'grey', mec='grey',marker='x',label="Jones+2018")
+	xObsJones=xobs
+	yObsJones=yobs
+	
+	# Predicted HIMF
+	y = hist_HImf[0,:]
 	ind = np.where(y < 0.)
-#	ax.plot(xmf[ind],y[ind],'r', label='all galaxies')
-	#####
-	#store these ones for chi2
+#	ax.plot(xmf[ind],y[ind],'k',  label ='all galaxies')
 	xMod=xmf[ind]
 	yMod=y[ind]
-	xObs=xobs[indx]
-	yObs=yobs
-#	y = hist_smf_cen[0,:]
+#	y = hist_HImf_cen[0,:]
 #	ind = np.where(y < 0.)
 #	ax.plot(xmf[ind],y[ind],'b', linestyle='dotted', label ='centrals')
-#	y = hist_smf_sat[0,:]
+#	y = hist_HImf_sat[0,:]
 #	ind = np.where(y < 0.)
-#	ax.plot(xmf[ind],y[ind],'g', linestyle='dashed', label ='satellites')
-#	y = hist_smf_30kpc[0,:]
-#	ind = np.where(y < 0.)
-#	ax.plot(xmf[ind],y[ind],'k', linestyle='dotted', linewidth=1, label ='30kpc')
-#	plt.axis([8,13,-6,-1])
-#	plt.show()
+#	ax.plot(xmf[ind],y[ind],'r', linestyle='dashed', label ='satellites')
+	
+#	pHI_GD14 = common.load_observation(obsdir, 'shark/data/Models/SharkVariations/HIH2MassFunctions_OtherModels.dat', [0])
+	
+#	ind = np.where(pHI_GD14 < 0)
+#	ax.plot(xmf[ind],pHI_GD14[ind],'BurlyWood', linestyle='dashdot', label = 'GD14')
+#########	plt.show()	
+	
 	
 	#############################
 	#do chi2
-	chi2=analysis.nonEqualChi2(xObs, xMod, yObs, yMod, 8, 13) 
-	print('chi2 :', chi2)
-	return chi2
-
-
+	chi2Zwaan=analysis.nonEqualChi2(xObsZwaan, xMod, yObsZwaan, yMod, 7, 13) 
+	chi2Jones=analysis.nonEqualChi2(xObsJones, xMod, yObsJones, yMod, 7, 13)
+	print('chi2Zwaan :', chi2Zwaan)
+	print('chi2Jones :', chi2Jones)
+	print('sum :', chi2Zwaan+chi2Jones)
+	return chi2Jones+chi2Zwaan
 if __name__=='__main__':
-	
-	observation = collections.namedtuple('observation', 'label x y yerrup yerrdn err_absolute')
 	
 	##################################
 	# Constants
@@ -204,5 +212,4 @@ if __name__=='__main__':
 	#however they allow the use of the prepare data from the standard plots smf code
 	#so they are useful in that respect 
 	modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
-
-	stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+	HIMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)

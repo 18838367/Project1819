@@ -21,19 +21,6 @@ import analysis
 ##################################
 # Constants
 
-GyrToYr = 1e9
-Zsun = 0.0127
-minmass = 1.0
-Omegab = 0.0491
-G    = 4.299e-9 #Gravity constant in units of (km/s)^2 * Mpc/Msun
-rho_crit = 3.0 * pow(100.0,2.0) / 8 / math.pi / G #in units of h^2*Msun/Mpc^3
-sbar = rho_crit * Omegab
-OmegaM = 0.3121
-OmegaL = 0.6879
-XH = 0.72
-
-modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
-x=(modeldir, outdir, redshift_table, subvols, obsdir)
 
 def cosmicDust(*args):
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, minmass, Omegab, G, rho_crit, sbar, OmegaM, OmegaL, XH = args
@@ -104,4 +91,18 @@ def cosmicDust(*args):
 	print('chi2_mol: ', chi2_mol)
 	return chi2, chi2_mol
 
-cosmicDust(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, minmass, Omegab, G, rho_crit, sbar, OmegaM, OmegaL, XH)
+if __name__=='__main__':
+	GyrToYr = 1e9
+	Zsun = 0.0127
+	minmass = 1.0
+	Omegab = 0.0491
+	G    = 4.299e-9 #Gravity constant in units of (km/s)^2 * Mpc/Msun
+	rho_crit = 3.0 * pow(100.0,2.0) / 8 / math.pi / G #in units of h^2*Msun/Mpc^3
+	sbar = rho_crit * Omegab
+	OmegaM = 0.3121
+	OmegaL = 0.6879
+	XH = 0.72
+	
+	modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
+	x=(modeldir, outdir, redshift_table, subvols, obsdir)
+	cosmicDust(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, minmass, Omegab, G, rho_crit, sbar, OmegaM, OmegaL, XH)
