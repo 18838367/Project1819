@@ -8,8 +8,8 @@ import math
 import time
 import multiprocessing
 ###########SWARM PARAMS#############
-ss = 30      ## swarmsize           #
-mi = 12      ## maximum iterations  #
+ss = 28      ## swarmsize           #
+mi = 10      ## maximum iterations  #
 prc = 4     ## number of processes # 
 ####################################
 #############GLOBAL PARAMS########
@@ -21,15 +21,18 @@ def callSMF(x, *args):
 	print('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', count, 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
 	fgas_dissipation, cgal=x
+	modeldir='/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/output'+str(str(count)+'_'+str(multiprocessing.current_process()._identity))+'/mini-SURFS/my_model'
 	print('--------------------------------------', x, '-----------------------------------------')
 	print('#######################################', multiprocessing.current_process()._identity, '#########################')
-	subprocess.call(['shark/build/shark', 'sample.cfg', '-o galaxy_mergers.fgas_dissipation='+str(fgas_dissipation), '-o galaxy_mergers.cgal='+str(cgal), '-o execution.output_directory=/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output'+str(count)+'_'+str(multiprocessing.current_process()._identity)])
+	subprocess.call(['shark/build/shark', 'sample.cfg', '-o galaxy_mergers.fgas_dissipation='+str(fgas_dissipation), '-o galaxy_mergers.cgal='+str(cgal), '-o execution.output_directory=/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/output'+str(count)+'_'+str(multiprocessing.current_process()._identity)])
 	chi2 = stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2										, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
 	return chi2
 
 
 if __name__ == '__main__':
 	modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
+	print(modeldir)
+	print(outdir)
 	##################################
 	# Constants
 	GyrToYr = 1e9

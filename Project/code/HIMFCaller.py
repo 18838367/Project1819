@@ -21,6 +21,7 @@ def callHIMF(x, *args):
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
 	fgas_dissipation, cgal=x
 	subprocess.call(['shark/build/shark', 'sample.cfg', '-o galaxy_mergers.fgas_dissipation='+str(fgas_dissipation), '-o galaxy_mergers.cgal='+str(cgal), '-o execution.output_directory=/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output'+str(count)+'_'+str(multiprocessing.current_process()._identity)])
+	modeldir='/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/output'+str(str(count)+'_'+str(multiprocessing.current_process()._identity))+'/mini-SURFS/my_model'
 	chi2 = HIMF.HIMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2										, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
 	return chi2
 
