@@ -371,8 +371,8 @@ pids=()
 #for i in `eval echo {1..${#shark_subvolumes[*]}}`
 for i in `eval echo {1..${#shark_params[*]}}`
 do
-	let "i = i -1"
-	s=1
+	let "i = i - 1"
+	s="199"
 	p=${shark_params[i]}
 	c=${cpus_per_task[i]}
 	m=${mem_per_task[i]}
@@ -400,7 +400,7 @@ then
 	exit 1
 fi
 info "All shark instances exited cleanly! :)"
-# 199
+
 # User requested a plot
 if [ -n "${shark_plot}" ]
 then

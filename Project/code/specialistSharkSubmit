@@ -278,7 +278,7 @@ submit_slurm() {
 	fi
 
 	cmd="$cmd -V \"$shark_subvolumes\""
-	cmd="$cmd -E \"${shark_params[@]}\" $config_file"
+	cmd="$cmd -E \"$shark_params\" $config_file"
 
 	if [ "$dry_run" = "1" ]
 	then
@@ -320,13 +320,14 @@ num_params=
 shark_verbosity=3
 shark_binary=
 shark_subvolumes=
-shark_params=
+shark_params=(1 2)
+echo "${shark_params}"
 shark_options=()
 shark_plot=
 shark_python_exec=python
 
 # Parse command line options
-while getopts "h?dO:Q:a:w:n:M:m:c:N:vqS:V:o:pP:" opt
+while getopts "h?dO:Q:a:w:n:M:m:c:N:E:vqS:V:o:pP:" opt
 do
 	case "$opt" in
 		[h?])
@@ -360,7 +361,7 @@ do
 			shark_binary="$OPTARG"
 			;;
 		V)
-			shark_subvolumes="$OPTARG"
+			shark_subvolumes="199"       #######"$OPTARG"
 			;;
 		o)
 			shark_options+=("$OPTARG")
@@ -412,6 +413,7 @@ do
 			;;
 	esac
 done
+
 # Positional argument is the configuration file name
 if [ $(($# - $OPTIND)) -lt 0 ]
 then
@@ -421,22 +423,7 @@ then
 fi
 config_file=${@:$OPTIND:1}
 
-#reading in the parameter values from the csv file
-count=0
-INPUT_FILE='particlePositions.csv'
-
-IFS=','
-
-while read param1
-do
-	shark_params[$count]=$param1
-	echo "parameter 1 - $param1"
-	count=$(($count+1))
-done < $INPUT_FILE
-
-
-
-
+#
 # Check that everything is in place if plotting is requested
 #
 if [ -n "${shark_plot}" ]
@@ -563,29 +550,29 @@ info "Will submit shark to work on $n_svols subvolumes: $shark_subvolumes"
 
 # Convert subvolumes specification (which may contain space- and
 # hypen-separated values) into a proper list of values
-#params=""
-#for pr in ${shark_params[@]}
-#do
-#	echo "looping $pr in ${shark_params[@]}"
-#	if [[ "$pr" == *"-"* ]]
-#	then
-#		first=${pr%%-*}
-#		second=${pr##*-}
-#		for i in `eval echo {${first}..${second}}`
-#		do
-#			params="$params $i"
-#		done
-#	else
-#		params="$params $pr"
-#	fi
-#done
-#shark_params="$params"
-#echo "shark params ${shark_params[@]}"
-#params=($params)
-#echo "params $params"
-n_params=${#shark_params[@]}
+params=""
+for pr in ${shark_params[@]}
+do
+	echo "looping $pr in ${shark_params[@]}"
+	if [[ "$pr" == *"-"* ]]
+	then
+		first=${pr%%-*}
+		second=${pr##*-}
+		for i in `eval echo {${first}..${second}}`
+		do
+			params="$params $i"
+		done
+	else
+		params="$params $pr"
+	fi
+done
+shark_params="$params"
+echo "shark params ${shark_params[@]}"
+params=($params)
+echo "params $params"
+n_params=${#params[@]}
 echo "number of params $n_params"
-info "Will submit shark to work on $n_params parameters: ${shark_params[@]}"
+info "Will submit shark to work on $n_params parameters: $shark_params"
 
 ##################################################################
 ##################################################################
@@ -610,7 +597,7 @@ else
 		test ! -d "$shark_output_directory" && mkdir -p "$shark_output_directory" &> /dev/null && break
 	done
 fi
-#info "Will run shark-run under $shark_output_directory"
+info "Will run shark-run under $shark_output_directory"
 
 # Copy the configuration file over to the working directory
 config_file_bname=`basename $config_file`
