@@ -119,7 +119,7 @@ _slurm_mem_per_task() {
 			mem_per_task="$mem_per_task `repeat $(($m / $t)) $t`"
 		done
 	else
-		mem_per_cpu=(`repeat $SLURM_MEM_PER_CPU ${#shark_params[*]}`)
+		mem_per_cpu=(`repeat $SLURM_MEM_PER_CPU $((${#shark_params[*]}/$numberOfParams))`)
 		for i in `eval echo {1..${#mem_per_cpu[*]}}`
 		do
 			let "i = i - 1"
@@ -225,7 +225,7 @@ shark_plot=
 shark_python_exec=python
 
 # Parse command line options
-while getopts "h?m:v:S:E:V:o:pP:" opt
+while getopts "h?m:v:S:E:N:V:o:pP:" opt
 do
 	case "$opt" in
 		[h?])
@@ -243,6 +243,9 @@ do
 			;;
 		E)
 			shark_params="$OPTARG"
+			;;
+		N)
+			numberOfParams="$OPTARG"
 			;;
 		V)
 			shark_subvolumes="$OPTARG"
@@ -274,12 +277,18 @@ shark_subvolumes=($shark_subvolumes)
 
 if [ -z "$shark_params" ]
 then
-	error "Missing -E option with subvolumes list"
+	error "Missing -E option with param list"
 	print_usage 1>&2
 	exit 1
 fi
 shark_params=($shark_params)
 
+if [ -z "$numberOfParams" ]
+then
+	error "Missing -N option with number of params"
+	print_usage 1>&2
+	exit 1
+fi
 
 
 # Positional argument is the configuration file name
@@ -360,7 +369,7 @@ done
 post_cmd="$post_cmd -v $shark_verbosity $config_file"
 
 info "Processing ${#shark_subvolumes[*]} subvolume(s): ${shark_subvolumes[*]}"
-info "Processing ${#shark_params[*]} parameters: ${shark_params[*]}"
+info "Processing ${#shark_params[*]} parameters: ${param_names[*]} with values ${shark_params[*]}"
 info ""
 info "================================================================================"
 info "Starting shark via srun with command-line:"
@@ -368,17 +377,29 @@ info "$cmd -c <threads> --mem-per-cpu <mem> $post_cmd -o <subvol> -t <threads>"
 info "================================================================================"
 info ""
 pids=()
-#for i in `eval echo {1..${#shark_subvolumes[*]}}`
-for i in `eval echo {1..${#shark_params[*]}}`
+looper=0
+echo params -------------------XXXXXX
+echo ${shark_params[*]}
+echo $numberOfParams
+for i in `eval echo {1..$((${#shark_params[*]}/$numberOfParams))}`
 do
+	echo $i
 	let "i = i - 1"
-	s="199"
-	p=${shark_params[i]}
+	s="0"
 	c=${cpus_per_task[i]}
 	m=${mem_per_task[i]}
-	_cmd="$cmd -c $c --mem-per-cpu $(($m/$c)) $post_cmd -o \"execution.simulation_batches=$s\" -o \"galaxy_mergers.fgas_dissipation=$p\" -t $c"
-	info "Spawning shark run for subvolume $s and fgas dissipation $p with $c threads and $m MB of memory: $_cmd"
-	eval $_cmd &> "shark_fgas_${p}.log" &
+	d=$PWD/$i
+	echo "$cmd -c $c --mem-per-cpu $(($m/$c)) $post_cmd -o \"execution.simulation_batches=$s\" -o \"execution.output_directory=$d\" -t $c"
+	_cmd="$cmd -c $c --mem-per-cpu $(($m/$c)) $post_cmd -o \"execution.simulation_batches=$s\" -o \"execution.output_directory=$d\" -t $c"
+	for j in `eval echo {1..$numberOfParams}`
+	do
+		p=${shark_params[looper]}
+		_cmd="$_cmd  -o \"$p\""
+		echo $_cmd 
+		looper=$(($looper+1))
+	done
+	info "Spawning shark run for subvolume $s and $p with $c threads and $m MB of memory: $_cmd"
+	eval $_cmd &> "particle_$i.log" &
 	pids+=($!)
 done
 
