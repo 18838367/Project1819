@@ -206,7 +206,7 @@ print_usage() {
 submit_slurm() {
 
 	# Each SHArk instance will be ran as a task
-	cmd="sbatch --ntasks $(($count/$numberOfParams))"
+	cmd="sbatch --ntasks $num_particles"
 	cmd="$cmd -o shark-run.log"
 
 	# Queueing accountability
@@ -277,9 +277,7 @@ submit_slurm() {
 	then
 		cmd="$cmd -p -P \"${shark_python_exec}\""
 	fi
-	cmd="$cmd -N \"$numberOfParams\""
-	cmd="$cmd -V \"$shark_subvolumes\""
-	cmd="$cmd -E \"$shark_params\" $config_file"
+	cmd="$cmd -V \"$shark_subvolumes\" $config_file"
 	if [ "$dry_run" = "1" ]
 	then
 		info "SLURM shark job submission command: $cmd"
@@ -316,18 +314,16 @@ modules=${SHARK_RUNTIME_MODULES}
 mem_per_task=
 cpus_per_task=
 num_nodes=
-num_params=
+num_particles=
 shark_verbosity=3
 shark_binary=
 shark_subvolumes=
-shark_params=
-echo "${shark_params}"
 shark_options=()
 shark_plot=
 shark_python_exec=python
 # 199
 # Parse command line options
-while getopts "h?dO:Q:a:w:n:N:M:m:c:N:E:vqS:V:o:pP:" opt
+while getopts "h?dO:Q:a:w:n:M:m:c:N:E:vqS:V:o:pP:" opt
 do
 	case "$opt" in
 		[h?])
@@ -369,6 +365,9 @@ do
 		p)
 			shark_plot=yes
 			;;
+		E)
+			num_particles=("$OPTARG")
+			;;
 		P)
 			shark_python_exec="${OPTARG}"
 			;;
@@ -383,9 +382,6 @@ do
 			;;
 		w)
 			walltime="$OPTARG"
-			;;
-		N)
-			numberOfParams="$OPTARG"
 			;;
 		n)
 			job_name="$OPTARG"
@@ -406,10 +402,6 @@ do
 		N)
 			num_nodes="$OPTARG"
 			;;
-#this might be useful later, use it to indicate which parameters ur testing then read there values in from the files
-#		E)
-#			shark_params="$OPTARG"
-#			;;
 		*)
 			print_usage_summary 1>&2
 			exit 1
@@ -425,18 +417,6 @@ then
 	exit 1
 fi
 config_file=${@:$OPTIND:1}
-
-
-#reading in the parameter values from the csv file
-count=0
-INPUT_FILE='/home/msammons/aux/particlePositions.ssv'
-
-while read param1
-do
-        shark_params[$count]=$param1
-        echo "parameter 1 - $param1"
-        count=$(($count+1))
-done < $INPUT_FILE
 
 
 #
@@ -565,31 +545,6 @@ info "Will submit shark to work on $n_svols subvolumes: $shark_subvolumes"
 ##################################################################
 
 
-# Convert subvolumes specification (which may contain space- and
-# hypen-separated values) into a proper list of values
-#params=""
-for pr in ${shark_params[@]}
-do
-	echo "looping $pr in ${shark_params[@]}"
-#	if [[ "$pr" == *"-"* ]]
-#	then
-#		first=${pr%%-*}
-#		second=${pr##*-}
-#	for i in `eval echo {${first}..${second}}`
-#	do
-#		params="$params $i"
-#	done
-#	else
-	params="$params $pr"
-#	fi
-done
-shark_params="$params"
-echo "shark params ${shark_params[@]}"
-params=($params)
-echo "params $params"
-#n_params=${#params[@]}
-echo "number of params $numberOfParams"
-info "Will submit shark to work on $numberOfParams parameters: $shark_params"
 
 ##################################################################
 ##################################################################
@@ -619,8 +574,13 @@ echo $shark_output_directory > /home/msammons/aux/SOD.txt
 # Copy the configuration file over to the working directory
 config_file_bname=`basename $config_file`
 cp "$config_file" "$shark_output_directory"
+cp "/home/msammons/aux/SOD.txt" "$shark_output_directory"
+cp "/home/msammons/aux/fields.txt" "$shark_output_directory"
+cp "/home/msammons/aux/particlePositions.ssv" "$shark_output_directory"
+cp "/home/msammons/aux/bounds.txt" "$shark_output_directory"
 config_file="$config_file_bname"
 info "Configuration file copied to $shark_output_directory/$config_file"
+info "Auxillary files copied to $shark_output_directory"
 
 # Go, go, go!
 info "Submitting shark to $queue_system"

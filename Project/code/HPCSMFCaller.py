@@ -10,8 +10,8 @@ import HPCCommon
 import os
 import multiprocessing
 ###########SWARM PARAMS#############
-ss = 24      ## swarmsize           #
-mi = 10      ## maximum iterations  #
+ss = 2      ## swarmsize           #
+mi = 1      ## maximum iterations  #
 prc = 1     ## number of processes # 
 ####################################
 #############GLOBAL PARAMS########
@@ -27,14 +27,13 @@ def HPCCallSMF(x, *args):
 		temp=names
 		names=np.zeros(1, dtype='object_')
 		names[0]=temp
-	looper=0
 	f2=open('/home/msammons/aux/particlePositions.ssv', 'w+')
 	for i in range(len(x[:,0])):
 		for j in range(len(names)):
-			f2.write(str(str(names[j])+'='+str(x[i, j]))+'\n')
-			looper=looper+1
+			f2.write(' -o "'+str(str(names[j])+'='+str(x[i, j]))+'"')
+		f2.write('\n')
 	f2.close()
-	subprocess.call(['./specialistSharkSubmit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '4:00', '-m', '1000M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-N', str(len(names)), '-V', '1', '../sample.cfg'])
+	subprocess.call(['./specialistSharkSubmit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '4:00', '-m', '1000M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '1', '../sample.cfg'])
 	time.sleep(10)	
 	#above will submit the shark instances for each PSO particle
 	#now need to ping queue until the jobs are done before returning the values 
