@@ -1,0 +1,11 @@
+Time for PSO =132.88810801506042
+Number of processes = 4
+Count =0
+Searched parameters = fgas_dissipation, cgal 
+xopt =[ 1.14594865  0.47509736]
+fopt =-4.13985627027
+swarmsize =4
+maxiter =1
+lb =[0, 0.45]
+ub =[1.5, 0.5]
+-----------------------------------------------------

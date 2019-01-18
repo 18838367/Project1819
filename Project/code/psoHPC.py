@@ -1,3 +1,6 @@
+#adapted from pyswarm version 0.7 for optimising the shark SAM on a HPC system
+
+
 from functools import partial
 import numpy as np
 
@@ -136,16 +139,25 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     # Initialize the particle's position
     x = lb + x*(ub - lb)
 
+	# commented out this bit so that it could be replaced with code that simple
+	# writes all the x values to file then calls a specialised submit function to 
+	# execute all of them simulatenously on a HPC system. 
+
     # Calculate objective and constraints for each particle
-    if processes > 1:
-        fx = np.array(mp_pool.map(obj, x))
-        fs = np.array(mp_pool.map(is_feasible, x))
-    else:
-        for i in range(S):
-            fx[i] = obj(x[i, :])
-            fs[i] = is_feasible(x[i, :])
-       
+#    if processes > 1:
+#        fx = np.array(mp_pool.map(obj, x))
+#        fs = np.array(mp_pool.map(is_feasible, x))
+#    else:
+#        for i in range(S):
+#            fx[i] = obj(x[i, :])
+#            fs[i] = is_feasible(x[i, :])
+
+	# my HPC specialist bit 
+#    np.savetxt('/home/msammons/PSOoutput/aux/particlePositions.txt', x, delimiter=',')
     # Store particle's best position (if constraints are satisfied)
+	fx = obj(x)
+	fs = is_feasible(x) 
+	
     i_update = np.logical_and((fx < fp), fs)
     p[i_update, :] = x[i_update, :].copy()
     fp[i_update] = fx[i_update]
@@ -179,13 +191,16 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         x = x*(~np.logical_or(maskl, masku)) + lb*maskl + ub*masku
 
         # Update objectives and constraints
-        if processes > 1:
-            fx = np.array(mp_pool.map(obj, x))
-            fs = np.array(mp_pool.map(is_feasible, x))
-        else:
-            for i in range(S):
-                fx[i] = obj(x[i, :])
-                fs[i] = is_feasible(x[i, :])
+#        if processes > 1:
+#            fx = np.array(mp_pool.map(obj, x))
+#            fs = np.array(mp_pool.map(is_feasible, x))
+#        else:
+#            for i in range(S):
+#                fx[i] = obj(x[i, :])
+#                fs[i] = is_feasible(x[i, :])
+
+		fx = obj(x)
+		fs = is_feasible(x)
 
         # Store particle's best position (if constraints are satisfied)
         i_update = np.logical_and((fx < fp), fs)

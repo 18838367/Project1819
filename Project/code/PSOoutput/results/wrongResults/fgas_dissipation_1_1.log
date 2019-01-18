@@ -1,0 +1,6 @@
+xopt =[ 0.43956339]
+fopt =0.249234717467
+swarmsize =1
+maxiter =1
+lb =[0]
+ub =[1.5]

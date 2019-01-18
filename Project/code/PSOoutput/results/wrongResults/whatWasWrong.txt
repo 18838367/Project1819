@@ -1,0 +1,3 @@
+model directory for each test was set to the same localtion in just the standard output file not the specific one for a certain number of process and cores and swarm size, so it was doing the calculation then readin the old data
+
+the run times should still be more or less correct tho if you want to use those
