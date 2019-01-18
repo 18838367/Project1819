@@ -10,7 +10,7 @@ import HPCCommon
 import os
 import multiprocessing
 ###########SWARM PARAMS#############
-ss = 2      ## swarmsize           #
+ss = 8     ## swarmsize           #
 mi = 1      ## maximum iterations  #
 prc = 1     ## number of processes # 
 ####################################
@@ -20,20 +20,24 @@ count=0
 def HPCCallSMF(x, *args):
 	global count 
 	count = count + 1
-	chi2=np.zeros(ss)
+	sT=np.zeros(ss)
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
 	names=np.genfromtxt('/home/msammons/aux/fields.txt', dtype='str')
-	if names.size==1 :
+	if names.size==2 :
 		temp=names
-		names=np.zeros(1, dtype='object_')
-		names[0]=temp
+		names=np.zeros([1,1], dtype='object_')
+		names[0,0]=temp
 	f2=open('/home/msammons/aux/particlePositions.ssv', 'w+')
 	for i in range(len(x[:,0])):
 		for j in range(len(names)):
-			f2.write(' -o "'+str(str(names[j])+'='+str(x[i, j]))+'"')
+			if(names[j,1]=='1'):
+				val=10**x[i,j]
+				f2.write(' -o "'+str(names[j, 0])+'='+str(val)+'"')
+			else:
+				f2.write(' -o "'+str(names[j, 0])+'='+str(x[i, j])+'"')
 		f2.write('\n')
 	f2.close()
-	subprocess.call(['./specialistSharkSubmit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '4:00', '-m', '1000M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '1', '../sample.cfg'])
+	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '4:00', '-m', '1500M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '0', '../sample.cfg'])
 	time.sleep(10)	
 	#above will submit the shark instances for each PSO particle
 	#now need to ping queue until the jobs are done before returning the values 
@@ -46,8 +50,10 @@ def HPCCallSMF(x, *args):
 	runNum=np.genfromtxt('/home/msammons/aux/SOD.txt', dtype='str')
 	for i in range(ss):
 		modeldir=str(runNum)+'/'+str(i)+'/mini-SURFS/my_model'
-		chi2[i]=stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
-	return chi2
+		sT[i]=stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+	np.save('/home/msammons/aux/tracks/track'+str(count), sT)
+	np.save('/home/msammons/aux/tracks/trackP'+str(count), x)
+	return sT
 
 
 if __name__ == '__main__':
@@ -96,11 +102,11 @@ if __name__ == '__main__':
 	xopt, fopt=psoHPC.pso(HPCCallSMF, lb, ub, args=args, swarmsize=ss, maxiter=mi, processes=prc) 
 	tEnd=time.time()
 	print('xopt: ', xopt, 'fopt: ', fopt)
-	f=open('/mnt/su3ctm/mawson/sharkOut/PSOoutput/results/SMFgm5_'+str(ss)+'_'+str(mi)+'.log', 'a+')
+	f=open('/mnt/su3ctm/mawson/sharkOut/PSOoutput/results/SMFri123_'+str(ss)+'_'+str(mi)+'.log', 'a+')
 	f.write('Time for PSO ='+str(tEnd-tStart)+'\n')
 	f.write('Number of processes = '+str(prc)+'\n')
 	f.write('Count ='+str(count)+'\n')
-	f.write('Searched parameters = fgas_dissipation \n')
+	f.write('Searched parameters = tau_reinc mhalo_norm halo_mass_power \n')
 	f.write('xopt ='+str(xopt)+'\n')
 	f.write('fopt ='+ str(fopt)+'\n')
 	f.write('swarmsize ='+str(ss)+'\n')

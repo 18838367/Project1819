@@ -3,6 +3,8 @@
 # data and obs data, (x and y values of course)
 
 import numpy as np 
+import scipy.special
+import math
 
 #linear interpolator
 def linIntp(x1, x2, y1, y2, xR):
@@ -60,11 +62,21 @@ def nearestNeighbours(xObs, xMod):
 	#print(closest1, closest2)
 	return placed1, placed2, closest1
 
-def myChi2(Obs, Mod):
-	chi2=(Mod-Obs)**2/Obs
+def myChi2(Obs, Mod, err):
+	chi2=(Mod-Obs)**2/(err**2)
 	return chi2
 
-def nonEqualChi2(xObs, xMod, yObs, yMod, above=666, below=666):
+def myStudentT(Obs, Mod, err):
+	var=sum((Obs-Mod)**2)/len(Obs)
+	nu=(2*var)/(var-1)
+	print('nu :', nu)
+	x=(Mod-Obs)**2/err
+	print('x :', x)
+	sT=(scipy.special.gamma((nu+1)/2.0))/((nu*math.pi)**(0.5)*scipy.special.gamma(nu/2.0))*(1+x/nu)**(-1*(nu+1)/2.0)
+	print('st :', sT)
+	return sT	
+
+def nonEqualChi2(xObs, xMod, yObs, yMod, ydn, yup, above=666, below=666):
 #invokes above methods to get a chi2 value from two sets of data with different x
 #values
 # CAUTION if models x values do not sufficiently resolve curve then this will 
@@ -74,9 +86,38 @@ def nonEqualChi2(xObs, xMod, yObs, yMod, above=666, below=666):
 		below=np.amax(xObs)+1.0
 	x1, x2, closest1= nearestNeighbours(xObs, xMod)
 	yR = linIntp(xMod[x1], xMod[x2], yMod[x1], yMod[x2], xObs)
-	chi2 = myChi2(yObs, yR)
+	tempC=np.greater(yR,yObs)
+	err=yup*tempC+ydn*np.invert(tempC)
+	print('yup & ydn :', yup, ydn)
+	print('tempC :', tempC)
+	print('err :', err)
+	chi2 = myChi2(yObs, yR, err)
 	tempA=np.greater(xObs,above)
 	tempB=np.less(xObs,below)
 	chi2=chi2*tempA*tempB
 	sumChi2=np.sum(chi2)
 	return sumChi2
+
+def nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, above=666, below=666):
+#invokes above methods to get a chi2 value from two sets of data with different x
+#values
+# CAUTION if models x values do not sufficiently resolve curve then this will 
+#be dead wrong
+        if above==666 and below==666:
+                above=np.amin(xObs)-1.0
+                below=np.amax(xObs)+1.0
+        x1, x2, closest1= nearestNeighbours(xObs, xMod)
+        yR = linIntp(xMod[x1], xMod[x2], yMod[x1], yMod[x2], xObs)
+        tempC=np.greater(yR,yObs)
+        err=yup*tempC+ydn*np.invert(tempC)
+        print('yup & ydn :', yup, ydn)
+        print('tempC :', tempC)
+        print('err :', err)
+        sT = myStudentT(yObs, yR, err)
+        tempA=np.greater(xObs,above)
+        tempB=np.less(xObs,below)
+        sT=sT*tempA*tempB+np.invert(tempA*tempB)
+	print('sT after: ', sT)
+        LL=np.sum(-1*np.log(sT))
+	print('LL :', LL)
+        return LL

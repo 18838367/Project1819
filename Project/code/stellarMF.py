@@ -6,12 +6,11 @@ import collections
 import subprocess
 import sys
 import h5py
-import hdf5Common
-from shark.standard_plots import common
+import common
+import utilities_statistics as us
+import smf
 import matplotlib.pyplot as plt
-from shark.standard_plots import utilities_statistics as us
 import analysis
-from shark.standard_plots import smf
 import collections
 #subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
 
@@ -72,7 +71,7 @@ def stellarMF(*args):
 	                       'mgas_metals_disk', 'mgas_metals_bulge',
 	                       'mstars_metals_disk', 'mstars_metals_bulge', 'type',
 	           'mvir_hosthalo', 'rstar_bulge')}
-	
+	print('stellarMF model dir : ', modeldir)	
 	for index, snapshot in enumerate(redshift_table[zlist]):
 	    hdf5_data = common.read_data(modeldir, snapshot, fields, subvols)
 	    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
@@ -125,11 +124,15 @@ def stellarMF(*args):
 	#load observations 
 	
 	z0obs = []
-	lm, p, dpdn, dpup = np.loadtxt('/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/data/mf/SMF/GAMAII_BBD_GSMFs.dat', usecols=[0,1,2,3], unpack=True)
+	lm, p, dpdn, dpup = np.loadtxt('/home/msammons/shark/data/mf/SMF/GAMAII_BBD_GSMFs.dat', usecols=[0,1,2,3], unpack=True)
 	xobs = lm
 	indx = np.where(p > 0)
 	yobs = np.log10(p[indx])
-	ydn = yobs - np.log10(p[indx]-dpdn[indx])
+	ytemp=p[indx]-dpdn[indx]
+	temp=np.less(ytemp, 0)   		#
+	fixed=0.0001*temp+ytemp*np.invert(temp)    #fixed a problem where there were undefined values due to log of negative values, negative values were given a minimum of 0.0001
+	print('fixed', fixed)
+	ydn = yobs - np.log10(fixed)	 	#
 	yup = np.log10(p[indx]+dpup[indx]) - yobs
 	z0obs.append((observation("Wright+2017", xobs[indx], yobs, ydn, yup, err_absolute=False), 'o'))
 	
@@ -161,9 +164,11 @@ def stellarMF(*args):
 	
 	#############################
 	#do chi2
-	chi2=analysis.nonEqualChi2(xObs, xMod, yObs, yMod, 8, 13) 
-	print('chi2 :', chi2)
-	return chi2
+	studentT=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
+	print('xMod & yMod :', xMod, yMod)
+	print('xObs & yObs :', xObs, yObs)
+	print('studentT :', studentT)
+	return studentT
 
 
 if __name__=='__main__':

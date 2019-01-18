@@ -1,15 +1,15 @@
 import numpy as np
-from PSOcode.pyswarm.pyswarm import pso
+import pso
 import subprocess
 import sys  
-from shark.standard_plots import common
+import common
 import stellarMF
 import math
 import time
 import multiprocessing
 ###########SWARM PARAMS#############
 ss = 4      ## swarmsize           #
-mi = 1      ## maximum iterations  #
+mi = 20     ## maximum iterations  #
 prc = 4     ## number of processes # 
 ####################################
 #############GLOBAL PARAMS########
@@ -20,8 +20,8 @@ def callSMF(x, *args):
 	count = count + 1
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
 	tau_reinc, mhalo_norm, halo_mass_power=x
-	modeldir='/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/output'+str(str(count)+'_'+str(multiprocessing.current_process()._identity))+'/mini-SURFS/my_model'
-	subprocess.call(['shark/build/shark', 'sample.cfg', '-o reincorporation.tau_reinc='+str(tau_reinc), '-o reincorporation.mhalo_norm='+str(mhalo_norm), '-o reincorporation.halo_mass_power='+str(halo_mass_power), '-o execution.output_directory=/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/output/output'+str(count)+'_'+str(multiprocessing.current_process()._identity)])
+	modeldir='/mnt/su3ctm/mawson/sharkOut/temp/output'+str(str(count)+'_'+str(multiprocessing.current_process()._identity))+'/mini-SURFS/my_model'
+	subprocess.call(['shark/build/shark', 'shark/sample.cfg', '-o reincorporation.tau_reinc='+str(tau_reinc), '-o reincorporation.mhalo_norm='+str(mhalo_norm), '-o reincorporation.halo_mass_power='+str(halo_mass_power), '-o execution.output_directory=/mnt/su3ctm/mawson/sharkOut/temp/output'+str(count)+'_'+str(multiprocessing.current_process()._identity)])
 	chi2 = stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2										, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
 	return chi2
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
 	xopt, fopt=pso.pso(callSMF, lb, ub, args=args, swarmsize=ss, maxiter=mi, processes=prc) 
 	tEnd=time.time()
 	print('xopt: ', xopt, 'fopt: ', fopt)
-	f=open('PSOoutput/results/SMFreinc123_'+str(ss)+'_'+str(mi)+'.log', 'a+')
+	f=open('/home/msammons/PSOoutput/results/SMFreinc123_'+str(ss)+'_'+str(mi)+'.log', 'a+')
 	f.write('Time for PSO ='+str(tEnd-tStart)+'\n')
 	f.write('Number of processes = '+str(prc)+'\n')
 	f.write('Count ='+str(count)+'\n')

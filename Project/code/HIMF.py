@@ -135,6 +135,8 @@ def HIMF(*args):
 #	ax.errorbar(xobs, yobs, yerr=[dpHIdn,dpHIup], ls='None', mfc='None', ecolor = 'grey', mec='grey',marker='o',label="Zwaan+2005")
 	xObsZwaan=xobs
 	yObsZwaan=yobs
+	ydnZwaan=dpHIdn
+	yupZwaan=dpHIup
 	#ALFALFA.40
 	lmHI, pHI, pdnHI, pduHI = common.load_observation(obsdir, 'mf/GasMF/HIMF_Jones18.dat', [0,1,2,3])
 	
@@ -147,6 +149,8 @@ def HIMF(*args):
 #	ax.errorbar(xobs, yobs, yerr=[dpdnHI,dpduHI], ls='None', mfc='None', ecolor = 'grey', mec='grey',marker='x',label="Jones+2018")
 	xObsJones=xobs
 	yObsJones=yobs
+	ydnJones=dpdnHI
+	jupJones=dpupHI
 	
 	# Predicted HIMF
 	y = hist_HImf[0,:]
@@ -170,12 +174,12 @@ def HIMF(*args):
 	
 	#############################
 	#do chi2
-	chi2Zwaan=analysis.nonEqualChi2(xObsZwaan, xMod, yObsZwaan, yMod, 7, 13) 
-	chi2Jones=analysis.nonEqualChi2(xObsJones, xMod, yObsJones, yMod, 7, 13)
-	print('chi2Zwaan :', chi2Zwaan)
-	print('chi2Jones :', chi2Jones)
-	print('sum :', chi2Zwaan+chi2Jones)
-	return chi2Jones+chi2Zwaan
+	sTZwaan=analysis.nonEqualT(xObsZwaan, xMod, yObsZwaan, yMod, ydnZwaan, yupZwaan, 7, 13) 
+	sTJones=analysis.nonEqualT(xObsJones, xMod, yObsJones, yMod, ydnJones, yupJones, 7, 13)
+	print('sTZwaan :', sTZwaan)
+	print('sTJones :', sTJones)
+	print('sum :', sTZwaan+sTJones)
+	return sTJones+sTZwaan
 if __name__=='__main__':
 	
 	##################################
