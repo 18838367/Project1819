@@ -1,8 +1,0 @@
-galaxy_merger.fgas_dissipation=0.865818697459
-galaxy_merger.cgal=0.759722747052
-galaxy_merger.fgas_dissipation=0.813357465594
-galaxy_merger.cgal=0.749545517842
-galaxy_merger.fgas_dissipation=0.924160819081
-galaxy_merger.cgal=0.102563232936
-galaxy_merger.fgas_dissipation=0.546657957835
-galaxy_merger.cgal=0.175776537003
