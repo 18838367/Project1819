@@ -1,0 +1,66 @@
+Time for PSO =127.368366957
+Number of processes = 4
+Count =0
+Searched parameters = tau_reinc, mhalo_norm, halo_mass_power 
+xopt =[ 1.50779244e+01  3.38936554e+10 -1.43297229e+00]
+fopt =-4.137096905022456
+swarmsize =4
+maxiter =1
+lb =[1, 1000000000.0, -2]
+ub =[30, 100000000000.0, 0]
+-----------------------------------------------------
+Time for PSO =6.89982414246
+Number of processes = 4
+Count =0
+Searched parameters = tau_reinc, mhalo_norm, halo_mass_power 
+xopt =[ 1.10510183e+01  7.40426066e+10 -1.89234397e+00]
+fopt =-4.137096905022456
+swarmsize =4
+maxiter =1
+lb =[1, 1000000000.0, -2]
+ub =[30, 100000000000.0, 0]
+-----------------------------------------------------
+Time for PSO =2.05537009239
+Number of processes = 4
+Count =0
+Searched parameters = tau_reinc, mhalo_norm, halo_mass_power 
+xopt =[ 1.57007804e+01  1.82672446e+10 -8.97518833e-03]
+fopt =-4.137096905022456
+swarmsize =4
+maxiter =1
+lb =[1, 1000000000.0, -2]
+ub =[30, 100000000000.0, 0]
+-----------------------------------------------------
+Time for PSO =3.56334710121
+Number of processes = 4
+Count =0
+Searched parameters = tau_reinc, mhalo_norm, halo_mass_power 
+xopt =[ 2.09851276e+01  4.55936605e+10 -1.96666002e+00]
+fopt =-4.137096905022456
+swarmsize =4
+maxiter =1
+lb =[1, 1000000000.0, -2]
+ub =[30, 100000000000.0, 0]
+-----------------------------------------------------
+Time for PSO =150.969088078
+Number of processes = 4
+Count =0
+Searched parameters = tau_reinc, mhalo_norm, halo_mass_power 
+xopt =[ 1.27058959e+01  9.93418602e+10 -4.90116175e-01]
+fopt =-59.76049915843115
+swarmsize =4
+maxiter =1
+lb =[1, 1000000000.0, -2]
+ub =[30, 100000000000.0, 0]
+-----------------------------------------------------
+Time for PSO =141.245290995
+Number of processes = 4
+Count =0
+Searched parameters = tau_reinc, mhalo_norm, halo_mass_power 
+xopt =[ 2.37205691e+01  7.98011960e+10 -1.21324912e+00]
+fopt =-59.69603650385873
+swarmsize =4
+maxiter =1
+lb =[1, 1000000000.0, -2]
+ub =[30, 100000000000.0, 0]
+-----------------------------------------------------

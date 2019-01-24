@@ -1,0 +1,3 @@
+reincorporation.tau_reinc 1
+reincorporation.mhalo_norm 1
+reincorporation.halo_mass_power 0

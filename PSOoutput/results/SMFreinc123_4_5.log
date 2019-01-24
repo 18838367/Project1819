@@ -1,0 +1,11 @@
+Time for PSO =450.55485487
+Number of processes = 4
+Count =0
+Searched parameters = tau_reinc, mhalo_norm, halo_mass_power 
+xopt =[ 1.43396660e+01  7.96828701e+10 -3.82869146e-01]
+fopt =-59.49935195171805
+swarmsize =4
+maxiter =5
+lb =[1, 1000000000.0, -2]
+ub =[30, 100000000000.0, 0]
+-----------------------------------------------------
