@@ -6,12 +6,11 @@ import collections
 import subprocess
 import sys
 import h5py
-import hdf5Common
-from shark.standard_plots import common
+import common
 import matplotlib.pyplot as plt
-from shark.standard_plots import utilities_statistics as us
+import utilities_statistics as us
 import analysis
-from shark.standard_plots import smf
+import smf
 #subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
 
 def HIMF(*args):
@@ -71,25 +70,44 @@ def HIMF(*args):
 	                       'mgas_metals_disk', 'mgas_metals_bulge',
 	                       'mstars_metals_disk', 'mstars_metals_bulge', 'type',
 	           'mvir_hosthalo', 'rstar_bulge')}
+	if subvols == 'multiple_batches':
 	
-	for index, snapshot in enumerate(redshift_table[zlist]):
-	    hdf5_data = common.read_data(modeldir, snapshot, fields, subvols)
-	    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
-	                         hist_smf_sat, hist_smf_30kpc, hist_HImf, hist_HImf_cen, hist_HImf_sat,
-	                         hist_H2mf, hist_H2mf_cen, hist_H2mf_sat, mainseq, mainseqsf,
-	                         sfe, mainseq_cen, mainseqsf_cen, sfe_cen, mainseq_sat,
-	                         mainseqsf_sat, sfe_sat, mzr, fmzr, mzr_cen, mzr_sat, plotz,
-	                         plotz_HImf, passive_fractions, hist_ssfr, mszr, mszr_cen,
-	             mszr_sat, mainseqsf_1s, mainseqHI, mainseqH2)
-	
-	    h0 = hdf5_data[0]
-	    if index == 0:
-	        (sfr_disk, sfr_burst, mdisk, mbulge) = hdf5_data[2:6]
-	        sfr_seq = np.zeros(shape = (2, len(mdisk)))
-	        ind  = np.where((sfr_disk + sfr_burst > 0) & (mdisk + mbulge > 0))
-	        sfr_seq[0,ind] = mass[ind]
-	        sfr_seq[1,ind] = np.log10((sfr_disk[ind] + sfr_burst[ind]) / h0 / GyrToYr)
-	
+		for index, snapshot in enumerate(redshift_table[zlist]):
+		    hdf5_data = common.read_dataMB(modeldir, snapshot, fields, subvols)
+		    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
+		                         hist_smf_sat, hist_smf_30kpc, hist_HImf, hist_HImf_cen, hist_HImf_sat,
+		                         hist_H2mf, hist_H2mf_cen, hist_H2mf_sat, mainseq, mainseqsf,
+		                         sfe, mainseq_cen, mainseqsf_cen, sfe_cen, mainseq_sat,
+		                         mainseqsf_sat, sfe_sat, mzr, fmzr, mzr_cen, mzr_sat, plotz,
+		                         plotz_HImf, passive_fractions, hist_ssfr, mszr, mszr_cen,
+		             mszr_sat, mainseqsf_1s, mainseqHI, mainseqH2)
+		
+		    h0 = hdf5_data[0]
+		    if index == 0:
+		        (sfr_disk, sfr_burst, mdisk, mbulge) = hdf5_data[2:6]
+		        sfr_seq = np.zeros(shape = (2, len(mdisk)))
+		        ind  = np.where((sfr_disk + sfr_burst > 0) & (mdisk + mbulge > 0))
+		        sfr_seq[0,ind] = mass[ind]
+		        sfr_seq[1,ind] = np.log10((sfr_disk[ind] + sfr_burst[ind]) / h0 / GyrToYr)
+	else:
+			
+		for index, snapshot in enumerate(redshift_table[zlist]):
+		    hdf5_data = common.read_data(modeldir, snapshot, fields, subvols)
+		    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
+		                         hist_smf_sat, hist_smf_30kpc, hist_HImf, hist_HImf_cen, hist_HImf_sat,
+		                         hist_H2mf, hist_H2mf_cen, hist_H2mf_sat, mainseq, mainseqsf,
+		                         sfe, mainseq_cen, mainseqsf_cen, sfe_cen, mainseq_sat,
+		                         mainseqsf_sat, sfe_sat, mzr, fmzr, mzr_cen, mzr_sat, plotz,
+		                         plotz_HImf, passive_fractions, hist_ssfr, mszr, mszr_cen,
+		             mszr_sat, mainseqsf_1s, mainseqHI, mainseqH2)
+		
+		    h0 = hdf5_data[0]
+		    if index == 0:
+		        (sfr_disk, sfr_burst, mdisk, mbulge) = hdf5_data[2:6]
+		        sfr_seq = np.zeros(shape = (2, len(mdisk)))
+		        ind  = np.where((sfr_disk + sfr_burst > 0) & (mdisk + mbulge > 0))
+		        sfr_seq[0,ind] = mass[ind]
+		        sfr_seq[1,ind] = np.log10((sfr_disk[ind] + sfr_burst[ind]) / h0 / GyrToYr)
 	#########################
 	#take logs
 	
@@ -126,7 +144,7 @@ def HIMF(*args):
 #	fig=plt.figure(figsize=(5,4.5))
 #	ax=fig.add_subplot(111)
 	#load observations #HIPASS
-	lmHI, pHI, dpHIdn, dpHIup = common.load_observation(obsdir, 'mf/GasMF/HIMF_Zwaan2005.dat', [0,1,2,3])
+	lmHI, pHI, dpHIdn, dpHIup = np.loadtxt('/home/msammons/shark/data/mf/GasMF/HIMF_Zwaan2005.dat', usecols=[0,1,2,3], unpack=True)
 	
 	#correct data for their choice of cosmology
 	hobs = 0.75
@@ -138,11 +156,11 @@ def HIMF(*args):
 	ydnZwaan=dpHIdn
 	yupZwaan=dpHIup
 	#ALFALFA.40
-	lmHI, pHI, pdnHI, pduHI = common.load_observation(obsdir, 'mf/GasMF/HIMF_Jones18.dat', [0,1,2,3])
+	lmHI, pHI, pdnHI, pduHI = np.loadtxt('/home/msammons/shark/data/mf/GasMF/HIMF_Jones18.dat', usecols=[0,1,2,3], unpack=True)
 	
 	#correct data for their choice of cosmology
 	dpdnHI = pHI - pdnHI
-	dpduHI = pduHI - pHI
+	dpupHI = pduHI - pHI
 	hobs = 0.7
 	xobs = lmHI + np.log10(pow(hobs,2)/pow(h0,2))
 	yobs = pHI + np.log10(pow(h0,3)/pow(hobs,3))
@@ -150,7 +168,7 @@ def HIMF(*args):
 	xObsJones=xobs
 	yObsJones=yobs
 	ydnJones=dpdnHI
-	jupJones=dpupHI
+	yupJones=dpupHI
 	
 	# Predicted HIMF
 	y = hist_HImf[0,:]
@@ -179,7 +197,7 @@ def HIMF(*args):
 	print('sTZwaan :', sTZwaan)
 	print('sTJones :', sTJones)
 	print('sum :', sTZwaan+sTJones)
-	return sTJones+sTZwaan
+	return sTJones
 if __name__=='__main__':
 	
 	##################################

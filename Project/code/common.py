@@ -234,6 +234,30 @@ def read_data(model_dir, snapshot, fields, subvolumes, include_h0_volh=True):
 
     return list(data.values())
 
+def read_dataMB(model_dir, snapshot, fields, subvolumes, include_h0_volh=True):
+    """Read the galaxies.hdf5 file for the given model/snapshot/subvolume"""
+
+    data = collections.OrderedDict()
+    fname = os.path.join(model_dir, str(snapshot), str(subvolumes), 'galaxies.hdf5')
+    print('Reading data from %s' % fname)
+    with h5py.File(fname, 'r') as f:
+        if include_h0_volh:
+            data['h0'] = f['cosmology/h'].value
+            data['vol'] = f['run_info/effective_volume'].value
+ 
+        for gname, dsnames in fields.items():
+            group = f[gname]
+            for dsname in dsnames:
+                full_name = '%s/%s' % (gname, dsname)
+                l = data.get(full_name, None)
+                if l is None:
+                    l = group[dsname].value
+                else:
+                    l = np.concatenate([l, group[dsname].value])
+                data[full_name] = l
+
+    return list(data.values())
+
 # If called as a program, print information taken from a configuration file
 # This simple functionality is used by shark-submit to easily find out where
 # the plots have been produced, and save us the trouble to re-implement it

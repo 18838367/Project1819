@@ -72,24 +72,44 @@ def stellarMF(*args):
 	                       'mstars_metals_disk', 'mstars_metals_bulge', 'type',
 	           'mvir_hosthalo', 'rstar_bulge')}
 	print('stellarMF model dir : ', modeldir)	
-	for index, snapshot in enumerate(redshift_table[zlist]):
-	    hdf5_data = common.read_data(modeldir, snapshot, fields, subvols)
-	    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
-	                         hist_smf_sat, hist_smf_30kpc, hist_HImf, hist_HImf_cen, hist_HImf_sat,
-	                         hist_H2mf, hist_H2mf_cen, hist_H2mf_sat, mainseq, mainseqsf,
-	                         sfe, mainseq_cen, mainseqsf_cen, sfe_cen, mainseq_sat,
-	                         mainseqsf_sat, sfe_sat, mzr, fmzr, mzr_cen, mzr_sat, plotz,
-	                         plotz_HImf, passive_fractions, hist_ssfr, mszr, mszr_cen,
-	             mszr_sat, mainseqsf_1s, mainseqHI, mainseqH2)
-	
-	    h0 = hdf5_data[0]
-	    if index == 0:
-	        (sfr_disk, sfr_burst, mdisk, mbulge) = hdf5_data[2:6]
-	        sfr_seq = np.zeros(shape = (2, len(mdisk)))
-	        ind  = np.where((sfr_disk + sfr_burst > 0) & (mdisk + mbulge > 0))
-	        sfr_seq[0,ind] = mass[ind]
-	        sfr_seq[1,ind] = np.log10((sfr_disk[ind] + sfr_burst[ind]) / h0 / GyrToYr)
-	
+
+	if subvols == 'multiple_batches':
+		for index, snapshot in enumerate(redshift_table[zlist]):
+		    hdf5_data = common.read_dataMB(modeldir, snapshot, fields, subvols)
+		    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
+		                         hist_smf_sat, hist_smf_30kpc, hist_HImf, hist_HImf_cen, hist_HImf_sat,
+		                         hist_H2mf, hist_H2mf_cen, hist_H2mf_sat, mainseq, mainseqsf,
+		                         sfe, mainseq_cen, mainseqsf_cen, sfe_cen, mainseq_sat,
+		                         mainseqsf_sat, sfe_sat, mzr, fmzr, mzr_cen, mzr_sat, plotz,
+		                         plotz_HImf, passive_fractions, hist_ssfr, mszr, mszr_cen,
+		             mszr_sat, mainseqsf_1s, mainseqHI, mainseqH2)
+		
+		    h0 = hdf5_data[0]
+		    if index == 0:
+		        (sfr_disk, sfr_burst, mdisk, mbulge) = hdf5_data[2:6]
+		        sfr_seq = np.zeros(shape = (2, len(mdisk)))
+		        ind  = np.where((sfr_disk + sfr_burst > 0) & (mdisk + mbulge > 0))
+		        sfr_seq[0,ind] = mass[ind]
+		        sfr_seq[1,ind] = np.log10((sfr_disk[ind] + sfr_burst[ind]) / h0 / GyrToYr)
+	else:
+		
+		for index, snapshot in enumerate(redshift_table[zlist]):
+		    hdf5_data = common.read_data(modeldir, snapshot, fields, subvols)
+		    mass = smf.prepare_data(hdf5_data, index, hist_smf, hist_smf_err, hist_smf_cen,
+		                         hist_smf_sat, hist_smf_30kpc, hist_HImf, hist_HImf_cen, hist_HImf_sat,
+		                         hist_H2mf, hist_H2mf_cen, hist_H2mf_sat, mainseq, mainseqsf,
+		                         sfe, mainseq_cen, mainseqsf_cen, sfe_cen, mainseq_sat,
+		                         mainseqsf_sat, sfe_sat, mzr, fmzr, mzr_cen, mzr_sat, plotz,
+		                         plotz_HImf, passive_fractions, hist_ssfr, mszr, mszr_cen,
+		             mszr_sat, mainseqsf_1s, mainseqHI, mainseqH2)
+		
+		    h0 = hdf5_data[0]
+		    if index == 0:
+		        (sfr_disk, sfr_burst, mdisk, mbulge) = hdf5_data[2:6]
+		        sfr_seq = np.zeros(shape = (2, len(mdisk)))
+		        ind  = np.where((sfr_disk + sfr_burst > 0) & (mdisk + mbulge > 0))
+		        sfr_seq[0,ind] = mass[ind]
+		        sfr_seq[1,ind] = np.log10((sfr_disk[ind] + sfr_burst[ind]) / h0 / GyrToYr)
 	#########################
 	#take logs
 	

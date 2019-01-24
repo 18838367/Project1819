@@ -3,15 +3,17 @@ import psoHPC
 import subprocess
 import sys  
 import common
+import HIMF
 import stellarMF
+import stellarMF1
 import math
 import time
 import HPCCommon
 import os
 import multiprocessing
 ###########SWARM PARAMS#############
-ss = 8     ## swarmsize           #
-mi = 1      ## maximum iterations  #
+ss = 16     ## swarmsize           #
+mi = 10      ## maximum iterations  #
 prc = 1     ## number of processes # 
 ####################################
 #############GLOBAL PARAMS########
@@ -20,7 +22,7 @@ count=0
 def HPCCallSMF(x, *args):
 	global count 
 	count = count + 1
-	sT=np.zeros(ss)
+	sT=np.zeros([ss, 3])
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
 	names=np.genfromtxt('/home/msammons/aux/fields.txt', dtype='str')
 	if names.size==2 :
@@ -37,8 +39,9 @@ def HPCCallSMF(x, *args):
 				f2.write(' -o "'+str(names[j, 0])+'='+str(x[i, j])+'"')
 		f2.write('\n')
 	f2.close()
-	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '4:00', '-m', '1500M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '0', '../sample.cfg'])
+	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '4:00', '-m', '1500M', '-c', '2', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '0 1', '../sample.cfg'])
 	time.sleep(10)	
+	subvols="multiple_batches"
 	#above will submit the shark instances for each PSO particle
 	#now need to ping queue until the jobs are done before returning the values 
 	while(HPCCommon.count_jobs('msammons')>0):
@@ -50,10 +53,14 @@ def HPCCallSMF(x, *args):
 	runNum=np.genfromtxt('/home/msammons/aux/SOD.txt', dtype='str')
 	for i in range(ss):
 		modeldir=str(runNum)+'/'+str(i)+'/mini-SURFS/my_model'
-		sT[i]=stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
-	np.save('/home/msammons/aux/tracks/track'+str(count), sT)
+		sT[i, 0]=HIMF.HIMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+		sT[i, 1]=stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+		sT[i, 2]=stellarMF1.stellarMF1(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+			
+	ssT=np.sum(sT,1)
+	np.save('/home/msammons/aux/tracks/track'+str(count), ssT)
 	np.save('/home/msammons/aux/tracks/trackP'+str(count), x)
-	return sT
+	return ssT
 
 
 if __name__ == '__main__':

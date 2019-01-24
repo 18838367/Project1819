@@ -67,8 +67,9 @@ def myChi2(Obs, Mod, err):
 	return chi2
 
 def myStudentT(Obs, Mod, err):
-	var=sum((Obs-Mod)**2)/len(Obs)
+	var=(sum((Obs-Mod)**2)/len(Obs))+1
 	nu=(2*var)/(var-1)
+	
 	print('nu :', nu)
 	x=(Mod-Obs)**2/err
 	print('x :', x)
