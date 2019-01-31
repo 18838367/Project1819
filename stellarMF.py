@@ -184,11 +184,11 @@ def stellarMF(*args):
 	
 	#############################
 	#do chi2
-	studentT=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
+	#studentT=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
 	print('xMod & yMod :', xMod, yMod)
 	print('xObs & yObs :', xObs, yObs)
-	print('studentT :', studentT)
-	return studentT
+	#print('studentT :', studentT)
+	return xObs, xMod, yObs, yMod, ydn, yup
 
 
 if __name__=='__main__':

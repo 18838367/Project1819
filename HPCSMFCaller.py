@@ -6,14 +6,15 @@ import common
 import HIMF
 import stellarMF
 import stellarMF1
+import analysis
 import math
 import time
 import HPCCommon
 import os
 import multiprocessing
 ###########SWARM PARAMS#############
-ss = 16     ## swarmsize           #
-mi = 10      ## maximum iterations  #
+ss = 4     ## swarmsize           #
+mi = 1    ## maximum iterations  #
 prc = 1     ## number of processes # 
 ####################################
 #############GLOBAL PARAMS########
@@ -24,12 +25,12 @@ def HPCCallSMF(x, *args):
 	count = count + 1
 	sT=np.zeros([ss, 3])
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
-	names=np.genfromtxt('/home/msammons/aux/fields.txt', dtype='str')
+	names=np.genfromtxt('/home/msammons/Project1819/aux/fields.txt', dtype='str')
 	if names.size==2 :
 		temp=names
 		names=np.zeros([1,1], dtype='object_')
 		names[0,0]=temp
-	f2=open('/home/msammons/aux/particlePositions.ssv', 'w+')
+	f2=open('/home/msammons/Project1819/aux/particlePositions.ssv', 'w+')
 	for i in range(len(x[:,0])):
 		for j in range(len(names)):
 			if(names[j,1]=='1'):
@@ -39,7 +40,7 @@ def HPCCallSMF(x, *args):
 				f2.write(' -o "'+str(names[j, 0])+'='+str(x[i, j])+'"')
 		f2.write('\n')
 	f2.close()
-	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '4:00', '-m', '1500M', '-c', '2', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '0 1', '../sample.cfg'])
+	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '8:00', '-m', '1500M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '0 1', '../sample.cfg'])
 	time.sleep(10)	
 	subvols="multiple_batches"
 	#above will submit the shark instances for each PSO particle
@@ -50,16 +51,19 @@ def HPCCallSMF(x, *args):
 	#####
 	#one ping, one ping only
 	######
-	runNum=np.genfromtxt('/home/msammons/aux/SOD.txt', dtype='str')
+	runNum=np.genfromtxt('/home/msammons/Project1819/aux/SOD.txt', dtype='str')
 	for i in range(ss):
 		modeldir=str(runNum)+'/'+str(i)+'/mini-SURFS/my_model'
-		sT[i, 0]=HIMF.HIMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
-		sT[i, 1]=stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
-		sT[i, 2]=stellarMF1.stellarMF1(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+		xObs, xMod, yObs, yMod, ydn, yup=HIMF.HIMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)	
+		sT[i, 0]=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 7, 13) 
+		xObs, xMod, yObs, yMod, ydn, yup=stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+		sT[i, 1]=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
+		xObs, xMod, yObs, yMod, ydn, yup=stellarMF1.stellarMF1(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
+		sT[i, 2]=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
 			
 	ssT=np.sum(sT,1)
-	np.save('/home/msammons/aux/tracks/track'+str(count), ssT)
-	np.save('/home/msammons/aux/tracks/trackP'+str(count), x)
+	np.save('/home/msammons/Project1819/aux/tracks/track'+str(count), ssT)
+	np.save('/home/msammons/Project1819/aux/tracks/trackP'+str(count), x)
 	return ssT
 
 
@@ -95,7 +99,7 @@ if __name__ == '__main__':
 
 	args=(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp,
 		 	dssfr, ssfrbins, xssfr)
-	bounds=np.genfromtxt('/home/msammons/aux/bounds.txt')
+	bounds=np.genfromtxt('/home/msammons/Project1819/aux/bounds.txt')
 	if(len(bounds.shape)==1):
 		ub=np.zeros(1)
 		lb=np.zeros(1)
@@ -105,7 +109,7 @@ if __name__ == '__main__':
 		ub=bounds[0,:]
 		lb=bounds[1,:]
 	tStart=time.time()
-	os.chdir('shark/hpc')
+	os.chdir('../shark/hpc')
 	xopt, fopt=psoHPC.pso(HPCCallSMF, lb, ub, args=args, swarmsize=ss, maxiter=mi, processes=prc) 
 	tEnd=time.time()
 	print('xopt: ', xopt, 'fopt: ', fopt)

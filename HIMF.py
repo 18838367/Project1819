@@ -192,12 +192,12 @@ def HIMF(*args):
 	
 	#############################
 	#do chi2
-	sTZwaan=analysis.nonEqualT(xObsZwaan, xMod, yObsZwaan, yMod, ydnZwaan, yupZwaan, 7, 13) 
-	sTJones=analysis.nonEqualT(xObsJones, xMod, yObsJones, yMod, ydnJones, yupJones, 7, 13)
-	print('sTZwaan :', sTZwaan)
-	print('sTJones :', sTJones)
-	print('sum :', sTZwaan+sTJones)
-	return sTJones
+#	sTZwaan=analysis.nonEqualT(xObsZwaan, xMod, yObsZwaan, yMod, ydnZwaan, yupZwaan, 7, 13) 
+#	sTJones=analysis.nonEqualT(xObsJones, xMod, yObsJones, yMod, ydnJones, yupJones, 7, 13)
+#	print('sTZwaan :', sTZwaan)
+#	print('sTJones :', sTJones)
+#	print('sum :', sTZwaan+sTJones)
+	return xObsJones, xMod, yObsJones, yMod, ydnJones, yupJones
 if __name__=='__main__':
 	
 	##################################

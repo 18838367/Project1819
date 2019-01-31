@@ -219,21 +219,21 @@ def stellarMF1(*args):
 	
 	# z1 obs
 	in_redshift = np.where(zdnM13 == 0.8)
-	studentTM13=analysis.nonEqualT(xobsM13[in_redshift], xMod, yobsM13[in_redshift], yMod, lerrM13[in_redshift], herrM13[in_redshift], 8, 13) 
+#	studentTM13=analysis.nonEqualT(xobsM13[in_redshift], xMod, yobsM13[in_redshift], yMod, lerrM13[in_redshift], herrM13[in_redshift], 8, 13) 
 	in_redshift = np.where(zdnMu13 == 1)
-	studentTMu13=analysis.nonEqualT(xobsMu13[in_redshift], xMod, yobsMu13[in_redshift], yMod, lerrMu13[in_redshift], herrMu13[in_redshift], 8, 13) 
+#	studentTMu13=analysis.nonEqualT(xobsMu13[in_redshift], xMod, yobsMu13[in_redshift], yMod, lerrMu13[in_redshift], herrMu13[in_redshift], 8, 13) 
 	in_redshift = np.where(zD17 == 1)
-	studentTD17=analysis.nonEqualT(lmD17[in_redshift], xMod, pD17[in_redshift], yMod, dp_dn_D17[in_redshift], dp_up_D17[in_redshift], 8, 13) 
+#	studentTD17=analysis.nonEqualT(lmD17[in_redshift], xMod, pD17[in_redshift], yMod, dp_dn_D17[in_redshift], dp_up_D17[in_redshift], 8, 13) 
 
 	#############################
 	#do chi2
-	print('xMod & yMod :', xMod, yMod)
-	print('xObs & yObs M13:', xobsM13, yobsM13)
-	print('xObs & yObs Mu13:', xobsMu13, yobsMu13)
-	print('xObs & yObs D17:', lmD17, pD17)
-	retVal=studentTM13 + studentTMu13 + studentTD17
-	print('studentT :', retVal)
-	return studentTD17
+#	print('xMod & yMod :', xMod, yMod)
+#	print('xObs & yObs M13:', xobsM13, yobsM13)
+#	print('xObs & yObs Mu13:', xobsMu13, yobsMu13)
+#	print('xObs & yObs D17:', lmD17, pD17)
+#	retVal=studentTM13 + studentTMu13 + studentTD17
+#	print('studentT :', retVal)
+	return lmD17[in_redshift], xMod, pD17[in_redshift], yMod, dp_dn_D17[in_redshift], dp_up_D17[in_redshift]
 
 
 if __name__=='__main__':
