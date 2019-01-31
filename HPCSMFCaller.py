@@ -40,7 +40,7 @@ def HPCCallSMF(x, *args):
 				f2.write(' -o "'+str(names[j, 0])+'='+str(x[i, j])+'"')
 		f2.write('\n')
 	f2.close()
-	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '8:00', '-m', '1500M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', str(ss), '-V', '0 1', '../sample.cfg'])
+	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '8:00', '-m', '1500M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', '/home/msammons/Project1819/aux/particlePositions.ssv', '-V', '0 1', '../sample.cfg'])
 	time.sleep(10)	
 	subvols="multiple_batches"
 	#above will submit the shark instances for each PSO particle
