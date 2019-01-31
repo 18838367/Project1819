@@ -19,25 +19,25 @@ prc = 1     ## number of processes #
 ####################################
 #############GLOBAL PARAMS########
 count=0
-
 def HPCCallSMF(x, *args):
 	global count 
 	count = count + 1
 	sT=np.zeros([ss, 3])
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
-	names=np.genfromtxt('/home/msammons/Project1819/aux/fields.txt', dtype='str')
-	if names.size==2 :
-		temp=names
-		names=np.zeros([1,1], dtype='object_')
-		names[0,0]=temp
+	space=np.genfromtxt('/home/msammons/Project1819/aux/searchSpace.txt', dtype='str')
+	if space.size==4 :
+		temp=space
+		space=np.zeros([1,4], dtype='object_')
+		space[0,:]=temp
 	f2=open('/home/msammons/Project1819/aux/particlePositions.ssv', 'w+')
 	for i in range(len(x[:,0])):
-		for j in range(len(names)):
-			if(names[j,1]=='1'):
+		for j in range(len(space)):
+			if(space[j,1]=='1'):
 				val=10**x[i,j]
-				f2.write(' -o "'+str(names[j, 0])+'='+str(val)+'"')
+				f2.write(' -o "'+str(space[j, 0])+'='+str(val)+'"')
 			else:
-				f2.write(' -o "'+str(names[j, 0])+'='+str(x[i, j])+'"')
+				f2.write(' -o "'+str(space[j, 0])+'='+str(x[i, j])+'"')
+			
 		f2.write('\n')
 	f2.close()
 	subprocess.call(['./shark-submit', '-a', 'Pawsey0119', '-S', '../build/shark', '-w', '8:00', '-m', '1500M', '-c', '1', '-n', 'PSOSMF'+str(count), '-O', '/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count), '-E', '/home/msammons/Project1819/aux/particlePositions.ssv', '-V', '0 1', '../sample.cfg'])
@@ -99,15 +99,15 @@ if __name__ == '__main__':
 
 	args=(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp,
 		 	dssfr, ssfrbins, xssfr)
-	bounds=np.genfromtxt('/home/msammons/Project1819/aux/bounds.txt')
-	if(len(bounds.shape)==1):
+	space=np.genfromtxt('/home/msammons/Project1819/aux/searchSpace.txt')
+	if(space.size==4):
 		ub=np.zeros(1)
 		lb=np.zeros(1)
-		ub[0]=bounds[0]
-		lb[0]=bounds[1]
+		ub[0]=space[3]
+		lb[0]=space[2]
 	else:
-		ub=bounds[0,:]
-		lb=bounds[1,:]
+		ub=space[:,3]
+		lb=space[:,2]
 	tStart=time.time()
 	os.chdir('../shark/hpc')
 	xopt, fopt=psoHPC.pso(HPCCallSMF, lb, ub, args=args, swarmsize=ss, maxiter=mi, processes=prc) 
