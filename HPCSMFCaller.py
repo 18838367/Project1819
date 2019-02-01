@@ -14,7 +14,7 @@ import os
 import multiprocessing
 ###########SWARM PARAMS#############
 ss = 4     ## swarmsize           #
-mi = 1    ## maximum iterations  #
+mi = 4    ## maximum iterations  #
 prc = 1     ## number of processes # 
 ####################################
 #############GLOBAL PARAMS########
@@ -23,7 +23,7 @@ def HPCCallSMF(x, *args):
 	global count 
 	count = count + 1
 	sT=np.zeros([ss, 3])
-	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr = args
+	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr, statTest = args
 	space=np.genfromtxt('/home/msammons/Project1819/aux/searchSpace.txt', dtype='str')
 	if space.size==4 :
 		temp=space
@@ -55,11 +55,11 @@ def HPCCallSMF(x, *args):
 	for i in range(ss):
 		modeldir=str(runNum)+'/'+str(i)+'/mini-SURFS/my_model'
 		xObs, xMod, yObs, yMod, ydn, yup=HIMF.HIMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)	
-		sT[i, 0]=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 7, 13) 
+		sT[i, 0]=getattr(analysis, 'nonEqual'+str(statTest))(xObs, xMod, yObs, yMod, ydn, yup, 7, 13) 
 		xObs, xMod, yObs, yMod, ydn, yup=stellarMF.stellarMF(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
-		sT[i, 1]=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
+		sT[i, 1]=getattr(analysis, 'nonEqual'+str(statTest))(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
 		xObs, xMod, yObs, yMod, ydn, yup=stellarMF1.stellarMF1(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr)
-		sT[i, 2]=analysis.nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
+		sT[i, 2]=getattr(analysis, 'nonEqual'+str(statTest))(xObs, xMod, yObs, yMod, ydn, yup, 8, 13) 
 			
 	ssT=np.sum(sT,1)
 	np.save('/home/msammons/Project1819/aux/tracks/track'+str(count), ssT)
@@ -68,6 +68,10 @@ def HPCCallSMF(x, *args):
 
 
 if __name__ == '__main__':
+	
+
+	statTest='StudentT'
+	#statTest='Chi2'
 	modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
 	##################################
 	# Constants
@@ -98,7 +102,7 @@ if __name__ == '__main__':
 	xssfr    = ssfrbins + dssfr/2.0
 
 	args=(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp,
-		 	dssfr, ssfrbins, xssfr)
+		 	dssfr, ssfrbins, xssfr, statTest)
 	space=np.genfromtxt('/home/msammons/Project1819/aux/searchSpace.txt')
 	if(space.size==4):
 		ub=np.zeros(1)

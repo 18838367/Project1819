@@ -67,9 +67,9 @@ def myChi2(Obs, Mod, err):
 	return chi2
 
 def myStudentT(Obs, Mod, err):
-	var=(sum((Obs-Mod)**2)/len(Obs))+1
-	nu=(2*var)/(var-1)
-	
+	sigma=(Obs-Mod)/err
+	var=sum(sigma**2/len(sigma))
+	nu=(2*var)/(var-1)	
 	print('nu :', nu)
 	x=(Mod-Obs)**2/err
 	print('x :', x)
@@ -99,7 +99,7 @@ def nonEqualChi2(xObs, xMod, yObs, yMod, ydn, yup, above=666, below=666):
 	sumChi2=np.sum(chi2)
 	return sumChi2
 
-def nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, above=666, below=666):
+def nonEqualStudentT(xObs, xMod, yObs, yMod, ydn, yup, above=666, below=666):
 #invokes above methods to get a chi2 value from two sets of data with different x
 #values
 # CAUTION if models x values do not sufficiently resolve curve then this will 
@@ -115,6 +115,10 @@ def nonEqualT(xObs, xMod, yObs, yMod, ydn, yup, above=666, below=666):
         print('tempC :', tempC)
         print('err :', err)
         sT = myStudentT(yObs, yR, err)
+	#below bit crops the data to only give you the results of the test in the desired
+	#domain, the chi2 and student-t parts are different because student-t uses log likelihood
+	#rather than just the sum like chi2 so you can't have values of zero with logs, had to change 
+	#them to ones
         tempA=np.greater(xObs,above)
         tempB=np.less(xObs,below)
         sT=sT*tempA*tempB+np.invert(tempA*tempB)
