@@ -52,9 +52,8 @@ def HPCCallSMF(x, *args):
 	#####
 	#one ping, one ping only
 	######
-	runNum=np.genfromtxt('/home/msammons/Project1819/aux/SOD.txt', dtype='str')
 	for i in range(ss):
-		modeldir=str(runNum)+'/'+str(i)+'/mini-SURFS/my_model'
+		modeldir='/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count)+'/'+str(i)+'/mini-SURFS/my_model'
 		for j in range(len(MFOpt)):
 			xObs, xMod, yObs, yMod, ydn, yup=constraints.massFunction(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr, MFOpt[j], zOpt[j])	
 			sT[i, j]=getattr(analysis, 'nonEqual'+str(statTest))(xObs, xMod, yObs, yMod, ydn, yup, domainLW[j], domainUP[j]) 
