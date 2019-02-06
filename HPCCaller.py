@@ -16,7 +16,7 @@ import multiprocessing
 ###########SWARM PARAMS#############
 ss = 4     ## swarmsize           #
 mi = 4    ## maximum iterations  #
-prc = 1     ## number of processes # 
+prc = 0     ## number of processes # 
 ####################################
 #############GLOBAL PARAMS########
 count=0
@@ -56,7 +56,7 @@ def HPCCallSMF(x, *args):
 		modeldir='/mnt/su3ctm/mawson/sharkOut/PSOoutput/PSOSMF'+str(count)+'/'+str(i)+'/mini-SURFS/my_model'
 		for j in range(len(MFOpt)):
 			xObs, xMod, yObs, yMod, ydn, yup=constraints.massFunction(modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr, MFOpt[j], zOpt[j])	
-			sT[i, j]=getattr(analysis, 'nonEqual'+str(statTest))(xObs, xMod, yObs, yMod, ydn, yup, domainLW[j], domainUP[j]) 
+			sT[i, j] = statTest(xObs, xMod, yObs, yMod, ydn, yup, domainLW[j], domainUP[j]) 
 			
 	ssT=np.sum(sT,1)
 	np.save('/home/msammons/Project1819/aux/tracks/track'+str(count), ssT)
@@ -71,6 +71,10 @@ if __name__ == '__main__':
 	domainLW=[7,8,8]
 	statTest='StudentT'
 	#statTest='Chi2'
+	if statTest == 'StudentT':
+		statTest = analysis.nonEqualStudentT
+	elif statTest == 'Chi2':
+		statTest = analysis.nonEqualChi2
 	modeldir, outdir, redshift_table, subvols, obsdir = common.parse_args()
 	##################################
 	# Constants

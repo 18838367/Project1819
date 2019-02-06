@@ -1,3 +1,6 @@
+#adapted from pyswarm verison 0.7 for optimising the shark SAM on a HPC system
+
+
 from functools import partial
 import numpy as np
 
@@ -135,16 +138,17 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     
     # Initialize the particle's position
     x = lb + x*(ub - lb)
-
     # Calculate objective and constraints for each particle
     if processes > 1:
         fx = np.array(mp_pool.map(obj, x))
         fs = np.array(mp_pool.map(is_feasible, x))
-    else:
+    elif processes==1:
         for i in range(S):
             fx[i] = obj(x[i, :])
             fs[i] = is_feasible(x[i, :])
-       
+    else:
+	fx = obj(x)
+	fx = is_feasible(x)
     # Store particle's best position (if constraints are satisfied)
     i_update = np.logical_and((fx < fp), fs)
     p[i_update, :] = x[i_update, :].copy()
@@ -182,11 +186,13 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         if processes > 1:
             fx = np.array(mp_pool.map(obj, x))
             fs = np.array(mp_pool.map(is_feasible, x))
-        else:
+        elif processes==1:
             for i in range(S):
                 fx[i] = obj(x[i, :])
                 fs[i] = is_feasible(x[i, :])
-
+	else:
+            fx = obj(x)
+            fs = is_feasible(x)
         # Store particle's best position (if constraints are satisfied)
         i_update = np.logical_and((fx < fp), fs)
         p[i_update, :] = x[i_update, :].copy()
