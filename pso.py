@@ -148,10 +148,11 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
             fs[i] = is_feasible(x[i, :])
     else:
 	fx = obj(x)
-	fx = is_feasible(x)
+	fs = is_feasible(x)
     # Store particle's best position (if constraints are satisfied)
     i_update = np.logical_and((fx < fp), fs)
     p[i_update, :] = x[i_update, :].copy()
+    print('fp', fp, 'fx', fx)
     fp[i_update] = fx[i_update]
 
     # Update swarm's best position
