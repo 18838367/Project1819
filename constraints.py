@@ -15,7 +15,11 @@ import collections
 #subprocess.call(["/Users/mawsonsammons/Documents/ICRARInternship/Project/code/shark/build/shark", sys.argv[1]])
 
 def massFunction(*args):
-
+	"""
+	- returns observation and model values for constraint functions
+	- currently implemented, SMF: z=0 z=1, HIMF
+	- adapted from standard_plots code in Shark
+	"""
 	observation = collections.namedtuple('observation', 'label x y yerrup yerrdn err_absolute')
 	modeldir, outdir, redshift_table, subvols, obsdir, GyrToYr, Zsun, XH, MpcToKpc, mlow, mupp, dm, mbins, xmf, imf, mlow2, mupp2, dm2, mbins2, xmf2, ssfrlow, ssfrupp, dssfr, ssfrbins, xssfr, MFOpt, zOpt=args
 	zlist=(0, 0.5, 1, 2, 3, 4)

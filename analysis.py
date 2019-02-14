@@ -28,8 +28,11 @@ def linIntp(x1, x2, y1, y2, xR):
 
 
 def nearestNeighbours(xObs, xMod):
-#finds the two nearest xMod values for each xObs value, used for finding 
-#closest model x values for linear interpolating a model y value at each obs x value
+	"""
+finds the two nearest xMod values for each xObs value, used for finding 
+closest model x values for linear interpolating a model y value at each obs x value
+	"""
+
 	xObs=np.asarray(xObs)
 	xMod=np.asarray(xMod)
 	kept=np.copy(xMod)

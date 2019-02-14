@@ -10,9 +10,6 @@ import numpy as np
 import pso
 #developed internally
 import common
-import HIMF
-import stellarMF
-import stellarMF1
 import analysis
 import constraints
 import HPCCommon
